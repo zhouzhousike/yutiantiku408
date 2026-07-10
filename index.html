@@ -392,6 +392,25 @@
   .btn.ghost{background:transparent;border:1px solid var(--border-strong);color:var(--text-2)}
   .btn.ghost:hover{border-color:var(--wrong);color:var(--wrong)}
 
+  /* ===== 统计块可点击（进入 已练习 / 错题） ===== */
+  .stat{position:relative}
+  .stat.clickable{cursor:pointer;transition:transform .15s var(--ease-out),border-color .15s,box-shadow .15s}
+  .stat.clickable:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 10px 26px rgba(0,0,0,.20)}
+  .stat-go{position:absolute;top:8px;right:10px;font-size:13px;opacity:.55}
+  .stat.clickable:hover .stat-go{opacity:1}
+
+  /* ===== 已练习 模块 ===== */
+  .done-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px;
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow)}
+  .dh-info{flex:1;min-width:200px}
+  .dh-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+  .dh-sub{font-size:12px;color:var(--text-3);line-height:1.5}
+  .done-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;margin-left:8px;white-space:nowrap}
+  .done-tag.ok{background:rgba(46,158,91,.18);color:#2e9e5b}
+  .done-tag.no{background:rgba(224,83,61,.18);color:#e0533d}
+  :root[data-theme="dark"] .done-tag.ok{background:rgba(86,204,128,.20);color:#7ee0a0}
+  :root[data-theme="dark"] .done-tag.no{background:rgba(255,122,105,.20);color:#ff9b8c}
+
   /* ===== 通关 / 清空 庆祝弹层 ===== */
   .celebrate{position:fixed;inset:0;z-index:140;display:flex;align-items:center;justify-content:center;
     background:rgba(2,4,10,.55);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
@@ -488,7 +507,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
   const isWrong = id=>wrong.has(id);
 
   const state = {
-    module:"daily",   // daily | bank | real
+    module:"daily",   // daily | bank | real | wrong | done | fav
     view:"browse",    // browse | practice
     subject:"all",
     lecture:"all",
@@ -496,7 +515,8 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     pIdx:0,
     pList:[],
     revealed:false,
-    selected:null
+    selected:null,
+    wrongCelebrated:false   // 错题区：本场是否已达全部答对（避免重复弹恭喜）
   };
 
   // ---------- helpers ----------
@@ -520,6 +540,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
       if(module==="daily" && q.source!=="daily") return;
       if(module==="bank" && q.source!=="bank500") return;
       if(module==="wrong" && !wrong.has(q.id)) return;
+      if(module==="done" && !prog[q.id]) return;
       if(subjKey!=="all" && q.subject!==subjKey) return;
       if(q.lecture && !out.includes(q.lecture)) out.push(q.lecture);
     });
@@ -532,12 +553,31 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
       if(state.module==="daily" && q.source!=="daily") return false;
       if(state.module==="bank" && q.source!=="bank500") return false;
       if(state.module==="wrong" && !wrong.has(q.id)) return false;
+      if(state.module==="done" && !prog[q.id]) return false;
       if(state.subject!=="all" && q.subject!==state.subject) return false;
       if(state.lecture!=="all" && q.lecture!==state.lecture) return false;
       if(kw){
         const hay=(q.stem+" "+(q.kps||[]).join(" ")+(q.lecture||"")).toLowerCase();
         if(!hay.includes(kw)) return false;
       }
+      return true;
+    });
+  }
+
+  // 进入刷题：按当前筛选快照本组题目（错题区会冻结本场，过程中不再重建/移位）
+  function startPractice(){
+    state.pList=filtered();
+    state.pIdx=0; state.revealed=false; state.selected=null;
+    if(state.module==="wrong") state.wrongCelebrated=false;
+  }
+
+  // 已练习列表（由 prog 记录派生，遵循当前 subject/lecture/search 筛选）
+  function doneArr(){
+    const kw=state.search.trim().toLowerCase();
+    return Object.keys(prog).map(id=>Q.find(q=>q.id===id)).filter(Boolean).filter(q=>{
+      if(state.subject!=="all" && q.subject!==state.subject) return false;
+      if(state.lecture!=="all" && q.lecture!==state.lecture) return false;
+      if(kw){ const hay=(q.stem+" "+(q.kps||[]).join(" ")+(q.lecture||"")).toLowerCase(); if(!hay.includes(kw)) return false; }
       return true;
     });
   }
@@ -549,15 +589,31 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     const doneCount = Object.keys(prog).length;
     const okCount = Object.values(prog).filter(v=>v==="ok").length;
     const rate = doneCount? Math.round(okCount/doneCount*100):0;
-    $("#stats").innerHTML = [
-      ["题库总量", Q.length],
-      ["每日一题", dCount],
-      ["基础必刷", bCount],
-      ["已练习", doneCount+" 题"],
-      ["错题", wrong.size]
-    ].map(([l,n])=>`<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join("");
+    const defs = [
+      ["题库总量", Q.length, null],
+      ["每日一题", dCount, null],
+      ["基础必刷", bCount, null],
+      ["已练习", doneCount+" 题"+(doneCount?` · 正确率 ${rate}%`:""), "done"],
+      ["错题", wrong.size, "wrong"]
+    ];
+    $("#stats").innerHTML = defs.map(([l,n,mod])=>`
+      <div class="stat ${mod?'clickable':''}" ${mod?`data-mod="${mod}"`:''}>
+        ${mod?`<span class="stat-go">👁</span>`:''}
+        <div class="n">${n}</div>
+        <div class="l">${l}${mod?' · 查看':''}</div>
+      </div>`).join("");
     $("#footTotal").textContent = Q.length;
     $("#favCount").textContent = fav.size;
+    $("#stats").querySelectorAll(".stat.clickable").forEach(s=>{
+      s.onclick=()=>openModuleView(s.dataset.mod);
+    });
+  }
+
+  // 点击统计块 -> 进入 已练习 / 错题 视图
+  function openModuleView(mod){
+    $("#tabs").querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    state.module=mod; state.view="browse"; state.subject="all"; state.lecture="all"; state.search="";
+    renderControls(); renderMain(); renderStats();
   }
 
   // ---------- render: controls ----------
@@ -566,17 +622,19 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     c.innerHTML="";
     if(state.module==="real"){ return; }
 
-    // view segmented
-    const seg = el("div","seg");
-    seg.innerHTML = `
-      <button data-view="browse" class="${state.view==='browse'?'on':''}">🗂 浏览</button>
-      <button data-view="practice" class="${state.view==='practice'?'on':''}">⚡ 刷题</button>`;
-    seg.querySelectorAll("button").forEach(b=>b.onclick=()=>{
-      state.view=b.dataset.view;
-      if(state.view==="practice"){ state.pList=filtered(); state.pIdx=0; state.revealed=false; state.selected=null; }
-      renderControls(); renderMain();
-    });
-    c.appendChild(seg);
+    // view segmented（已练习模块仅浏览，不显示刷题切换）
+    if(state.module!=="done"){
+      const seg = el("div","seg");
+      seg.innerHTML = `
+        <button data-view="browse" class="${state.view==='browse'?'on':''}">🗂 浏览</button>
+        <button data-view="practice" class="${state.view==='practice'?'on':''}">⚡ 刷题</button>`;
+      seg.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+        state.view=b.dataset.view;
+        if(state.view==="practice"){ startPractice(); }
+        renderControls(); renderMain();
+      });
+      c.appendChild(seg);
+    }
 
     // subject chips
     const chips=el("div","chips");
@@ -584,7 +642,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     allChip.onclick=()=>setSubject("all");
     chips.appendChild(allChip);
     SUBJ.forEach(s=>{
-      const inModule = state.module==="daily"?q=>q.source==="daily":state.module==="wrong"?q=>wrong.has(q.id):q=>q.source==="bank500";
+      const inModule = state.module==="daily"?q=>q.source==="daily":state.module==="wrong"?q=>wrong.has(q.id):state.module==="done"?q=>!!prog[q.id]:q=>q.source==="bank500";
       const n=Q.filter(q=>inModule(q)&&q.subject===s.key).length;
       if(!n) return;
       const b=el("button","chip"+(state.subject===s.key?" on":""),s.name.replace("计算机组成与系统结构","计组").replace("操作系统","操作系统"));
@@ -598,7 +656,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     if(lects.length>1){
       const sel=el("select","sel");
       sel.innerHTML=`<option value="all">全部章节</option>`+lects.map(l=>`<option value="${esc(l)}" ${state.lecture===l?"selected":""}>${esc(l)}</option>`).join("");
-      sel.onchange=()=>{ state.lecture=sel.value; if(state.view==="practice"){state.pList=filtered();state.pIdx=0;state.revealed=false;state.selected=null;} renderMain(); };
+      sel.onchange=()=>{ state.lecture=sel.value; if(state.view==="practice"){ startPractice(); } renderMain(); };
       c.appendChild(sel);
     }
 
@@ -609,13 +667,13 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     c.appendChild(sw);
     const inp=$("#searchInput",sw);
     inp.oninput=()=>{ state.search=inp.value;
-      if(state.view==="practice"){state.pList=filtered();state.pIdx=0;state.revealed=false;state.selected=null;}
+      if(state.view==="practice"){ startPractice(); }
       renderMain(); };
   }
 
   function setSubject(k){
     state.subject=k; state.lecture="all";
-    if(state.view==="practice"){state.pList=filtered();state.pIdx=0;state.revealed=false;state.selected=null;}
+    if(state.view==="practice"){ startPractice(); }
     renderControls(); renderMain();
   }
 
@@ -625,9 +683,11 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     m.innerHTML="";
     if(state.module==="real"){ m.appendChild(renderReal()); return; }
     if(state.module==="fav"){ renderFav(m); return; }
+    if(state.module==="done"){ renderDone(m); return; }
     if(state.module==="wrong"){
       if(state.view==="practice"){
-        state.pList = filtered();
+        // 关键：错题区刷题冻结本场列表，不再在此重建/移位，避免"题干与答案错位"
+        if(!state.pList.length){ state.pList=filtered(); }
         if(state.pIdx >= state.pList.length) state.pIdx = Math.max(0, state.pList.length-1);
         const head=wrongHeadEl();
         if(head) m.appendChild(head);
@@ -775,7 +835,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
       grow.appendChild(rev);
     }else{
       const again=el("button","btn accent","🔀 换一批/重做");
-      again.onclick=()=>{ state.pIdx=0;state.revealed=false;state.selected=null; renderMain(); };
+      again.onclick=()=>{ if(state.module==="wrong") state.wrongCelebrated=false; startPractice(); renderMain(); };
       grow.appendChild(again);
     }
     nav.appendChild(prev); nav.appendChild(grow); nav.appendChild(next);
@@ -797,7 +857,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     if(!state.selected){ // nothing selected -> just show answer
       flashSelectHint(); return;
     }
-    const correct=(q.answer||[]);
+    const correct=normAns(q.answer);
     const isOk = correct.includes(state.selected);
     prog[q.id]= isOk?"ok":"no"; write(LS.prog,prog);
     if(isOk) wrong.delete(q.id); else wrong.add(q.id);
@@ -806,14 +866,14 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     renderStats();
     renderControls();
     let celebrated=false;
-    // 错题区：刷对了当前题，可能从列表移除
-    if(state.module==="wrong" && isOk){
-      if(wrong.size===0){ celebrated=true; celebrate("🎉","错题清空！","你已掌握全部错题，太强了"); }
-      state.pList = filtered();
-      if(state.pIdx >= state.pList.length) state.pIdx = Math.max(0, state.pList.length-1);
-    }
-    // 通关：非错题区、且揭晓的是本组最后一道
-    if(!celebrated && state.module!=="wrong" && state.pList.length && state.pIdx===state.pList.length-1){
+    if(state.module==="wrong"){
+      // 错题区：必须"本场全部作答正确"才弹恭喜（答对的题仍留在本场供回顾，list 不重建）
+      if(!state.wrongCelebrated && state.pList.length && state.pList.every(x=>prog[x.id]==="ok")){
+        celebrated=true; state.wrongCelebrated=true;
+        celebrate("🎉","错题清空！","你已掌握全部错题，太强了");
+      }
+    } else if(state.pList.length && state.pIdx===state.pList.length-1){
+      // 非错题区：揭晓本组最后一道 -> 恭喜通关
       celebrated=true;
       celebrate("🏆","恭喜通关！","你已完成本组全部 "+state.pList.length+" 道题目");
     }
@@ -945,6 +1005,41 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     observeCards();
   }
 
+  // ---------- DONE (已练习) ----------
+  function renderDone(m){
+    const list = doneArr();
+    const wrap=el("div","list");
+    if(!list.length){
+      wrap.appendChild(el("div","fav-empty",`<div class="big">✅</div><div>还没有练习记录。<br>去任意模块点「⚡ 刷题」作答，完成后的题目会汇总到这里～</div>`));
+      m.appendChild(wrap); return;
+    }
+    const okN = list.filter(q=>prog[q.id]==="ok").length;
+    const rate = Math.round(okN/list.length*100);
+    const head=el("div","done-head");
+    head.innerHTML=`<div class="dh-info">
+        <div class="dh-title">已练习 · <b>${list.length}</b> 题 · 正确率 <b>${rate}%</b></div>
+        <div class="dh-sub">这些是你作答过的题目，✓ 表示当时答对了（答对会自动移出错题库），✗ 表示当时答错了</div>
+      </div>`;
+    const clearBtn=el("button","btn ghost","🗑 清空已练");
+    clearBtn.onclick=()=>{
+      if(confirm("确定清空全部练习记录？（已练习、正确率统计将重置，不可撤销）")){
+        prog={}; write(LS.prog,{});
+        renderStats(); renderControls(); renderMain();
+      }
+    };
+    head.appendChild(clearBtn);
+    wrap.appendChild(head);
+    list.forEach((q,i)=>{
+      const c=card(q,i);
+      const ok = prog[q.id]==="ok";
+      const tag=el("div","done-tag "+(ok?"ok":"no"), ok?"✓ 当时答对":"✗ 当时答错");
+      c.querySelector(".card-head").appendChild(tag);
+      wrap.appendChild(c);
+    });
+    m.appendChild(wrap);
+    observeCards();
+  }
+
   // ---------- CELEBRATE overlay ----------
   function celebrate(emoji,title,sub){
     let ov=$("#celebrate");
@@ -991,7 +1086,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
       const mod=t.dataset.mod;
       if(mod==="fav"){ state.module="fav"; }
       else{ state.module=mod; state.view="browse"; state.subject="all"; state.lecture="all"; state.search=""; }
-      if(state.view==="practice"){state.pList=filtered();state.pIdx=0;state.revealed=false;state.selected=null;}
+      if(state.view==="practice"){ startPractice(); }
       renderControls(); renderMain(); renderStats();
     };
   });
