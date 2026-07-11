@@ -574,6 +574,8 @@
       <div class="stats" id="stats"></div>
     </section>
 
+    <div class="mod-title" id="modTitle"></div>
+
     <section class="controls" id="controls"></section>
 
     <main id="main"></main>
@@ -680,13 +682,20 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
   const isFav = id=>fav.has(id);
   const badge = (cls,txt)=>`<span class="badge ${cls}">${esc(txt)}</span>`;
   const normAns = a=> Array.isArray(a)? a : (a==null? [] : [a]);
+  // 元素在文档中的绝对 offsetTop（递归处理 position:relative 祖先）
+  function absoluteOffsetTop(el){
+    let top = 0;
+    while(el){
+      top += el.offsetTop;
+      el = el.offsetParent;
+    }
+    return top;
+  }
   // 切换科目/区域后，滚动到筛选区顶部（而非页面绝对顶部），让 controls 正好露在导航下方
   function scrollToControls(){
     const c=$("#controls");
     if(!c) return;
-    const rect = c.getBoundingClientRect();
-    const top = window.scrollY + rect.top - 66;
-    window.scrollTo({top:Math.max(0,top),left:0,behavior:"smooth"});
+    window.scrollTo({top:Math.max(0,absoluteOffsetTop(c)-66),left:0,behavior:"smooth"});
   }
 
   function chapterNum(s){
@@ -798,15 +807,18 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     renderControls(); renderMain(); renderStats();
   }
 
+  function renderModuleTitle(){
+    const mt=$("#modTitle");
+    if(!mt) return;
+    mt.innerHTML=`<span class="mod-pill">${esc(MODULE_NAME[state.module] || state.module)}</span>`;
+  }
+
   // ---------- render: controls ----------
   function renderControls(){
+    renderModuleTitle();
     const c = $("#controls");
     c.innerHTML="";
     if(state.module==="real"){ return; }
-
-    // 当前模块标识：让用户在 controls 区域也能一眼知道自己在哪个模块
-    const modName = MODULE_NAME[state.module] || state.module;
-    c.appendChild(el("div","mod-title",`<span class="mod-pill">${esc(modName)}</span>`));
 
     // view segmented（已练习模块仅浏览，不显示刷题切换）
     if(state.module!=="done"){
