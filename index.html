@@ -291,6 +291,17 @@
   .fav-empty{text-align:center;padding:60px 20px;color:var(--text-3)}
   .fav-empty .big{font-size:40px;margin-bottom:14px}
 
+  /* 通用空状态（收藏/错题/已练习 的「某科目×某区域无题」） */
+  .empty-state{text-align:center;padding:48px 24px;margin:6px 0;
+    color:var(--text-3);border:1px dashed var(--border-strong);border-radius:16px;
+    background:var(--surface-2)}
+  .empty-state .es-ic{width:56px;height:56px;margin:0 auto 14px;border-radius:50%;
+    display:grid;place-items:center;font-size:26px;
+    background:var(--accent-soft);color:var(--accent);border:1px solid var(--border)}
+  .empty-state .es-title{font-size:15px;font-weight:700;color:var(--text-2);margin-bottom:6px;line-height:1.5}
+  .empty-state .es-hint{font-size:13px;color:var(--text-3);line-height:1.65;max-width:360px;margin:0 auto}
+  .empty-state .es-hint b{color:var(--accent);font-weight:700}
+
   .foot{text-align:center;color:var(--text-2);font-size:13px;padding:30px 0 50px;border-top:1px solid var(--border);margin-top:20px}
   .foot b{color:var(--accent)}
 
@@ -663,6 +674,55 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
   // 已练习区：按来源区域统计已练数
   const doneSizeByZone = zoneKey => Q.filter(q=>prog[q.id]&&q.source===zoneKey).length;
 
+  // 某科目×某区域「无对应题目」的空状态（收藏/错题/已练习通用）
+  const EMPTY_META = {
+    fav:   {icon:"⭐", noun:"收藏的题目",
+            global:["还没有收藏的题目","在任意题目卡片右上角点 ☆ 即可加入收藏～"],
+            hint:"换个科目或区域看看，也可以先去题目里点 <b>☆</b> 收藏几道～"},
+    wrong: {icon:"📝", noun:"错题",
+            global:["还没有错题","刷题时答错的题目会自动出现在这里～"],
+            hint:"答错的题会自动归到这里，继续刷题巩固一下吧～"},
+    done:  {icon:"✅", noun:"已练习的题目",
+            global:["还没有练习记录","去任意模块点「⚡ 刷题」作答，完成后的题目会汇总到这里～"],
+            hint:"去刷几道题，练习记录就会出现在这一栏～"}
+  };
+  function emptyEl(kind){
+    const m = EMPTY_META[kind];
+    let title, hint;
+    if(state.subject==="all" && state.zone==="all"){
+      [title,hint] = m.global;
+    }else{
+      const scope = (state.zone!=="all" ? "「"+zoneName(state.zone)+"」" : "")
+                  + (state.subject!=="all" ? "「"+SUBJ_KEY_TO_NAME[state.subject]+"」" : "");
+      title = scope + "还没有" + m.noun;
+      hint = m.hint;
+    }
+    const w = el("div","empty-state");
+    w.innerHTML = `<div class="es-ic">${m.icon}</div>`
+      + `<div class="es-title">${esc(title)}</div>`
+      + `<div class="es-hint">${hint}</div>`;
+    return w;
+  }
+
+  // 刷题模式下的空状态（收藏/错题/每日一题/基础500 通用）：同样按「科目×区域」提示
+  function practiceEmptyEl(){
+    const w = el("div","empty-state");
+    let title, hint;
+    if(state.subject==="all" && state.zone==="all"){
+      title = "当前筛选条件下没有题目";
+      hint = "在上方调整科目或区域，或切换「🗂 浏览」看看别的题目～";
+    }else{
+      const scope = (state.zone!=="all" ? "「"+zoneName(state.zone)+"」" : "")
+                  + (state.subject!=="all" ? "「"+SUBJ_KEY_TO_NAME[state.subject]+"」" : "");
+      title = scope + "还没有可刷的题目";
+      hint = "换个科目或区域筛选，或切换「🗂 浏览」先积累一些题目～";
+    }
+    w.innerHTML = `<div class="es-ic">⚡</div>`
+      + `<div class="es-title">${esc(title)}</div>`
+      + `<div class="es-hint">${hint}</div>`;
+    return w;
+  }
+
   // ---------- storage ----------
   const LS = {
     fav:"yt408_fav", prog:"yt408_prog", theme:"yt408_theme", view:"yt408_view", wrong:"yt408_wrong",
@@ -753,7 +813,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
       if(state.module==="wrong" && !wrong.has(q.id)) return false;
       if(state.module==="fav" && !fav.has(q.id)) return false;
       if(state.module==="done" && !prog[q.id]) return false;
-      if(state.module==="wrong" && state.zone!=="all" && q.source!==state.zone) return false;
+      if(state.zone!=="all" && (state.module==="wrong"||state.module==="fav"||state.module==="done") && q.source!==state.zone) return false;
       if(state.subject!=="all" && q.subject!==state.subject) return false;
       if(state.lecture!=="all" && q.lecture!==state.lecture) return false;
       if(kw){
@@ -1046,7 +1106,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     const list = state.pList.length? state.pList : filtered();
     state.pList=list;
     if(!list.length){
-      m.appendChild(el("div","empty-practice","⚡<br><br>当前筛选条件下没有题目，去调整一下筛选吧～"));
+      m.appendChild(practiceEmptyEl());
       return;
     }
     if(state.pIdx>=list.length) state.pIdx=list.length-1;
@@ -1293,10 +1353,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     let base=Q.filter(q=>fav.has(q.id));
     if(state.zone!=="all") base=base.filter(q=>q.source===state.zone);
     const wrap=el("div","list");
-    if(!base.length){
-      wrap.appendChild(el("div","fav-empty",`<div class="big">⭐</div><div>还没有收藏的题目。<br>在任意题目卡片右上角点 ☆ 即可加入收藏～</div>`));
-      m.appendChild(wrap); return;
-    }
+    if(!base.length){ wrap.appendChild(emptyEl("fav")); m.appendChild(wrap); return; }
     if(state.subject==="all"){
       // 未指定科目：按科目分组，分组标题即“科目区分”，无需在每张卡片前重复标注
       SUBJ.forEach(s=>{
@@ -1308,7 +1365,9 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
         items.forEach((q,i)=>wrap.appendChild(card(q,i)));
       });
     } else {
-      base.filter(q=>q.subject===state.subject).forEach((q,i)=>wrap.appendChild(card(q,i)));
+      const items=base.filter(q=>q.subject===state.subject);
+      if(!items.length){ wrap.appendChild(emptyEl("fav")); m.appendChild(wrap); return; }
+      items.forEach((q,i)=>wrap.appendChild(card(q,i)));
     }
     m.appendChild(wrap);
     observeCards();
@@ -1343,8 +1402,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     if(state.subject!=="all") list=list.filter(q=>q.subject===state.subject);
     const wrap=el("div","list");
     if(!list.length){
-      wrap.appendChild(el("div","fav-empty",`<div class="big">📝</div><div>还没有错题。<br>刷题时答错的题目会自动出现在这里～</div>`));
-      m.appendChild(wrap); return;
+      wrap.appendChild(emptyEl("wrong")); m.appendChild(wrap); return;
     }
     const head=wrongHeadEl();
     if(head) wrap.appendChild(head);
@@ -1358,8 +1416,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     const list = doneArr();
     const wrap=el("div","list");
     if(!list.length){
-      wrap.appendChild(el("div","fav-empty",`<div class="big">✅</div><div>还没有练习记录。<br>去任意模块点「⚡ 刷题」作答，完成后的题目会汇总到这里～</div>`));
-      m.appendChild(wrap); return;
+      wrap.appendChild(emptyEl("done")); m.appendChild(wrap); return;
     }
     const firstOk = list.filter(q=>prog[q.id]==="ok" && doneFrom[q.id]!=="wrong").length;
     const fromWrong = list.filter(q=>prog[q.id]==="ok" && doneFrom[q.id]==="wrong").length;
