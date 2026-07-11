@@ -112,6 +112,7 @@
   .hero p{color:var(--text-2);font-size:16px;max-width:560px;margin:0 auto;opacity:.85;font-family:'荆南波波黑','JingNanBoBo','PingFang SC','Microsoft YaHei',sans-serif}
   .m-br{display:none}
   :root[data-theme="light"] .hero p{color:#2A3B4A;opacity:.95;font-weight:500}
+  .hero-tagline{margin-top:10px;font-size:14px;font-style:italic;color:var(--accent-hi);opacity:.85;letter-spacing:.5px;font-family:'瑞云写刻','RuiYunXieKe','KaiTi','STKaiti',serif}
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;justify-items:stretch;margin-top:30px;max-width:780px;margin-left:auto;margin-right:auto}
   .stat{background:var(--surface-2);border:1px solid var(--border);border-radius:16px;padding:16px 18px;min-width:0;text-align:center;position:relative}
   .stat .n{font-size:clamp(26px,3.5vw,32px);font-weight:800;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums}
@@ -252,6 +253,7 @@
   .verdict.no{color:var(--wrong);background:var(--wrong-bg)}
   .pnav{display:flex;gap:12px;margin-top:26px;align-items:center}
   .pnav .grow{flex:1;display:flex;justify-content:center;align-items:center}
+  .again-wrap{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
   .pnbtn{width:48px;height:48px;border-radius:14px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);
     font-size:20px;cursor:pointer;transition:.25s;display:grid;place-items:center}
   .pnbtn:hover:not(:disabled){transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--border-strong)}
@@ -567,6 +569,7 @@
     <section class="hero">
       <h1><span class="t1">把</span><span class="t2 grad">408</span><span class="t3">刷成</span><span class="t4 grad ul">肌肉记忆</span></h1>
       <p>山高万仞，只登一步<br class="m-br">——宇天陪你，一天天刷上山顶</p>
+      <div class="hero-tagline">四面八方，都是前方。</div>
       <div class="hero-actions">
         <button class="btn primary" id="heroStart">⚡ 开始刷题</button>
         <button class="btn" id="heroDaily">🗓 每日一题</button>
@@ -1075,9 +1078,31 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
       rev.style.width="100%"; rev.onclick=reveal;
       grow.appendChild(rev);
     }else{
-      const again=el("button","btn accent","🔀 换一批/重做");
-      again.onclick=()=>{ if(state.module==="wrong") state.wrongCelebrated=false; delete pos[state.module]; write(LS.pos,pos); startPractice(); renderMain(); };
-      grow.appendChild(again);
+      const againWrap=el("div","again-wrap");
+      const shuffle=el("button","btn accent","🔀 换一批");
+      shuffle.title="打乱当前筛选条件下的题目顺序，重新刷";
+      shuffle.onclick=()=>{
+        const arr=state.pList.slice();
+        for(let i=arr.length-1;i>0;i--){
+          const j=Math.floor(Math.random()*(i+1));
+          [arr[i],arr[j]]=[arr[j],arr[i]];
+        }
+        state.pList=arr;
+        state.pIdx=0; state.revealed=false; state.selected=null;
+        if(state.module==="wrong") state.wrongCelebrated=false;
+        pos[state.module]=0; write(LS.pos,pos);
+        renderMain();
+      };
+      const redo=el("button","btn ghost","↺ 重做");
+      redo.title="保持当前顺序，从第 1 道重新开始";
+      redo.onclick=()=>{
+        if(state.module==="wrong") state.wrongCelebrated=false;
+        delete pos[state.module]; write(LS.pos,pos);
+        startPractice();
+        renderMain();
+      };
+      againWrap.appendChild(shuffle); againWrap.appendChild(redo);
+      grow.appendChild(againWrap);
     }
     nav.appendChild(prev); nav.appendChild(grow); nav.appendChild(next);
     pc.appendChild(nav);
