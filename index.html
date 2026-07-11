@@ -247,7 +247,7 @@
   .verdict.ok{color:var(--correct);background:var(--correct-bg)}
   .verdict.no{color:var(--wrong);background:var(--wrong-bg)}
   .pnav{display:flex;gap:12px;margin-top:26px;align-items:center}
-  .pnav .grow{flex:1}
+  .pnav .grow{flex:1;display:flex;justify-content:center;align-items:center}
   .pnbtn{width:48px;height:48px;border-radius:14px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);
     font-size:20px;cursor:pointer;transition:.25s;display:grid;place-items:center}
   .pnbtn:hover:not(:disabled){transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--border-strong)}
@@ -426,7 +426,7 @@
     -webkit-backdrop-filter:blur(18px);
   }
   :root[data-theme="dark"] .card:hover{box-shadow:0 12px 48px rgba(0,0,0,.5),0 0 0 1px rgba(215,137,93,.12)}
-  :root[data-theme="dark"] .b-zone{background:rgba(120,170,210,.18);color:#a9d2ee;border-color:rgba(120,170,210,.40)}
+  :root[data-theme="dark"] .b-zone{background:rgba(186,140,80,.20);color:#d8b26a;border-color:rgba(186,140,80,.44)}
   :root[data-theme="dark"] .btn{
     background:var(--surface-2);
     border-color:rgba(255,255,255,.10);
@@ -492,14 +492,19 @@
     background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow)}
   .dh-info{flex:1;min-width:200px}
   .dh-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
-  .dh-sub{font-size:12px;color:var(--text-3);line-height:1.5}
+  .dh-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--text-2);margin-top:2px}
+  .dh-legend .lg{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+  .dh-legend .lg i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .dh-legend .lg-ok i{background:#2e9e5b}
+  .dh-legend .lg-no i{background:#e0533d}
+  .dh-legend .lg-fw i{background:#b07d28}
   .done-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;margin-left:8px;white-space:nowrap}
   .done-tag.ok{background:rgba(46,158,91,.18);color:#2e9e5b}
   .done-tag.no{background:rgba(224,83,61,.18);color:#e0533d}
-  .done-tag.ok.from-wrong{background:linear-gradient(90deg,rgba(59,111,143,.22),rgba(91,163,232,.22));color:var(--accent);box-shadow:inset 0 0 0 1px rgba(91,163,232,.4)}
+  .done-tag.ok.from-wrong{background:rgba(186,140,80,.20);color:#b07d28;box-shadow:inset 0 0 0 1px rgba(186,140,80,.5)}
   :root[data-theme="dark"] .done-tag.ok{background:rgba(86,204,128,.20);color:#7ee0a0}
   :root[data-theme="dark"] .done-tag.no{background:rgba(255,122,105,.20);color:#ff9b8c}
-  :root[data-theme="dark"] .done-tag.ok.from-wrong{background:linear-gradient(90deg,rgba(215,137,93,.32),rgba(215,137,93,.20));color:var(--accent-hi);box-shadow:inset 0 0 0 1px rgba(215,137,93,.5)}
+  :root[data-theme="dark"] .done-tag.ok.from-wrong{background:rgba(216,178,106,.20);color:#e6c483;box-shadow:inset 0 0 0 1px rgba(216,178,106,.5)}
 
   /* ===== 通关 / 清空 庆祝弹层 ===== */
   .celebrate{position:fixed;inset:0;z-index:140;display:flex;align-items:center;justify-content:center;
@@ -629,6 +634,8 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
   const favSizeByZone = zoneKey => Q.filter(q=>fav.has(q.id)&&q.source===zoneKey).length;
   // 错题区：按来源区域统计错题数
   const wrongSizeByZone = zoneKey => Q.filter(q=>wrong.has(q.id)&&q.source===zoneKey).length;
+  // 已练习区：按来源区域统计已练数
+  const doneSizeByZone = zoneKey => Q.filter(q=>prog[q.id]&&q.source===zoneKey).length;
 
   // ---------- storage ----------
   const LS = {
@@ -667,6 +674,11 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
   const isFav = id=>fav.has(id);
   const badge = (cls,txt)=>`<span class="badge ${cls}">${esc(txt)}</span>`;
   const normAns = a=> Array.isArray(a)? a : (a==null? [] : [a]);
+  // 切换科目/区域后，滚动到筛选区顶部（而非页面绝对顶部），让 controls 正好露在导航下方
+  function scrollToControls(){
+    const c=$("#controls");
+    if(c) window.scrollTo({top:Math.max(0,c.offsetTop-66),left:0,behavior:"smooth"});
+  }
 
   function chapterNum(s){
     if(!s) return 9999;
@@ -724,6 +736,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     return Object.keys(prog).map(id=>Q.find(q=>q.id===id)).filter(Boolean).filter(q=>{
       if(state.subject!=="all" && q.subject!==state.subject) return false;
       if(state.lecture!=="all" && q.lecture!==state.lecture) return false;
+      if(state.zone!=="all" && q.source!==state.zone) return false;
       if(kw){ const hay=(q.stem+" "+(q.kps||[]).join(" ")+(q.lecture||"")).toLowerCase(); if(!hay.includes(kw)) return false; }
       return true;
     });
@@ -809,21 +822,24 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
         : state.module==="fav"?q=>fav.has(q.id)
         : q=>q.source==="bank500";
       const n=Q.filter(q=>inModule(q)&&q.subject===s.key).length;
-      if(!n) return;
+      // 每日一题：始终展示全部4科（其余两科题目将陆续上传）；其他模块仅展示有题的科目
+      if(!n && state.module!=="daily") return;
       const b=el("button","chip"+(state.subject===s.key?" on":""),s.name.replace("计算机组成与系统结构","计组").replace("操作系统","操作系统"));
       b.onclick=()=>setSubject(s.key);
       chips.appendChild(b);
     });
     c.appendChild(chips);
 
-    // 收藏区 / 错题区：额外提供“来源区域”筛选（每日一题区 / 基础必刷500题区 / 真题区）
-    if(state.module==="fav" || state.module==="wrong"){
+    // 收藏区 / 错题区 / 已练习区：额外提供“来源区域”筛选（每日一题区 / 基础必刷500题区 / 真题区）
+    if(state.module==="fav" || state.module==="wrong" || state.module==="done"){
       const zc=el("div","chips zone-chips");
       const zall=el("button","chip"+(state.zone==="all"?" on":""),"全部区域");
       zall.onclick=()=>setZone("all");
       zc.appendChild(zall);
       ZONE.forEach(z=>{
-        const n = state.module==="fav" ? favSizeByZone(z.key) : wrongSizeByZone(z.key);
+        const n = state.module==="fav" ? favSizeByZone(z.key)
+                : state.module==="wrong" ? wrongSizeByZone(z.key)
+                : doneSizeByZone(z.key);
         if(!n) return;
         const b=el("button","chip"+(state.zone===z.key?" on":""),z.name);
         b.onclick=()=>setZone(z.key);
@@ -872,14 +888,14 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     state.subject=k; state.lecture="all";
     if(state.view==="practice"){ startPractice(); }
     renderControls(); renderMain();
-    window.scrollTo({top:0,left:0,behavior:"smooth"});
+    scrollToControls();
   }
 
   function setZone(k){
     state.zone=k;
     if(state.view==="practice"){ startPractice(); }
     renderControls(); renderMain();
-    window.scrollTo({top:0,left:0,behavior:"smooth"});
+    scrollToControls();
   }
 
   // ---------- render: main ----------
@@ -1255,12 +1271,17 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
       wrap.appendChild(el("div","fav-empty",`<div class="big">✅</div><div>还没有练习记录。<br>去任意模块点「⚡ 刷题」作答，完成后的题目会汇总到这里～</div>`));
       m.appendChild(wrap); return;
     }
-    const okN = list.filter(q=>prog[q.id]==="ok").length;
-    const rate = Math.round(okN/list.length*100);
+    const firstOk = list.filter(q=>prog[q.id]==="ok" && doneFrom[q.id]!=="wrong").length;
+    const fromWrong = list.filter(q=>prog[q.id]==="ok" && doneFrom[q.id]==="wrong").length;
+    const wrongN = list.length - firstOk - fromWrong;
     const head=el("div","done-head");
     head.innerHTML=`<div class="dh-info">
-        <div class="dh-title">已练习 · <b>${list.length}</b> 题 · 正确率 <b>${rate}%</b></div>
-        <div class="dh-sub">这些是你作答过的题目，✓ 表示当时答对了（答对会自动移出错题库），✗ 表示当时答错了</div>
+        <div class="dh-title">已练习 · <b>${list.length}</b> 题</div>
+        <div class="dh-legend">
+          <span class="lg lg-ok"><i></i>一次做对 ${firstOk}</span>
+          <span class="lg lg-no"><i></i>一次做错 ${wrongN}</span>
+          <span class="lg lg-fw"><i></i>错题区攻克 ${fromWrong}</span>
+        </div>
       </div>`;
     const clearBtn=el("button","btn ghost","🗑 清空已练");
     clearBtn.onclick=()=>{
@@ -1275,14 +1296,14 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     list.forEach((q,i)=>{
       const c=card(q,i);
       const ok = prog[q.id]==="ok";
-      let tagText, tagCls;
+      let sym, tagCls;
       if(ok){
-        if(doneFrom[q.id]==="wrong"){ tagText="✓ 错题区攻克"; tagCls="ok from-wrong"; }
-        else { tagText="✓ 当时答对"; tagCls="ok"; }
+        if(doneFrom[q.id]==="wrong"){ sym="✓"; tagCls="ok from-wrong"; }
+        else { sym="✓"; tagCls="ok"; }
       } else {
-        tagText="✗ 当时答错"; tagCls="no";
+        sym="✗"; tagCls="no";
       }
-      const tag=el("div","done-tag "+tagCls, tagText);
+      const tag=el("div","done-tag "+tagCls, sym);
       c.querySelector(".head-badges").appendChild(tag);
       wrap.appendChild(c);
     });
