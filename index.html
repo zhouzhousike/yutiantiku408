@@ -710,7 +710,7 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
   const kpBlockHtml = q=>{
     if(q.source!=="daily" || !q.kpSummary) return "";
     return `<div class="kp-block">
-      <button type="button" class="kp-toggle" aria-expanded="false">📌 知识点梳理<span class="kp-chev">▾</span></button>
+      <button type="button" class="kp-toggle" aria-expanded="false">【知识点梳理】<span class="kp-chev">▾</span></button>
       <div class="kp-body">${esc(q.kpSummary)}</div>
     </div>`;
   };
@@ -1005,8 +1005,8 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
 
     const ans=el("div","analysis");
     const ansTxt=normAns(q.answer).join("、");
-    ans.innerHTML= kpBlockHtml(q)
-      + `<div class="ttl">✓ 正确答案：${esc(ansTxt)}</div><div class="body">${esc(q.analysis||"（暂无解析）")}</div>`
+    ans.innerHTML= `<div class="ttl">✓ 正确答案：${esc(ansTxt)}</div><div class="body">${esc(q.analysis||"（暂无解析）")}</div>`
+      + kpBlockHtml(q)
       + videoNoteHtml(q)
       + (q.kps&&q.kps.length?`<div class="kp-row">${q.kps.map(k=>`<span class="kp">${esc(k)}</span>`).join("")}</div>`:"");
     c.appendChild(ans);
@@ -1090,9 +1090,9 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
       res.appendChild(verdict);
       const ansTxt=correct.join("、");
       const block=el("div");
-      block.innerHTML= kpBlockHtml(q)
-        + `<div class="ttl" style="font-size:12.5px;font-weight:800;letter-spacing:1px;color:var(--accent);margin-bottom:7px">✓ 正确答案：${esc(ansTxt)}</div>
+      block.innerHTML= `<div class="ttl" style="font-size:12.5px;font-weight:800;letter-spacing:1px;color:var(--accent);margin-bottom:7px">✓ 正确答案：${esc(ansTxt)}</div>
         <div class="body" style="font-size:14.5px;color:var(--text-2);line-height:1.8;white-space:pre-wrap">${esc(q.analysis||"（暂无解析）")}</div>`
+        + kpBlockHtml(q)
         + videoNoteHtml(q)
         + (q.kps&&q.kps.length?`<div class="kp-row">${q.kps.map(k=>`<span class="kp">${esc(k)}</span>`).join("")}</div>`:"");
       res.appendChild(block);
@@ -1253,10 +1253,10 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     if(randState.revealed){
       const isOk=randState.selected&&correct.includes(randState.selected);
       const res=$("#rResult",m);
-      res.innerHTML= kpBlockHtml(q)
-        + `<div class="verdict ${isOk?"ok":"no"}" style="margin-bottom:12px">${isOk?"🎉 回答正确":"✗ 回答错误"}</div>
+      res.innerHTML= `<div class="verdict ${isOk?"ok":"no"}" style="margin-bottom:12px">${isOk?"🎉 回答正确":"✗ 回答错误"}</div>
         <div class="ttl" style="font-size:12.5px;font-weight:800;letter-spacing:1px;color:var(--accent);margin-bottom:7px">✓ 正确答案：${esc(correct.join("、"))}</div>
         <div class="body" style="font-size:14.5px;color:var(--text-2);line-height:1.8;white-space:pre-wrap">${esc(q.analysis||"（暂无解析）")}</div>`
+        + kpBlockHtml(q)
         + videoNoteHtml(q)
         + (q.kps&&q.kps.length?`<div class="kp-row">${q.kps.map(k=>'<span class="kp">'+esc(k)+'</span>').join("")}</div>`:"");
       res.classList.add("open");
