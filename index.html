@@ -201,10 +201,16 @@
   .analysis.open{max-height:2000px;opacity:1;margin-top:16px}
   .analysis .ttl{font-size:12.5px;font-weight:800;letter-spacing:1px;color:var(--accent-hi);margin-bottom:7px}
   .analysis .body{font-size:14.5px;color:var(--text-2);line-height:1.8;white-space:pre-wrap}
-  .kp-block{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--surface-3);
-    border:1px solid var(--border);border-left:3px solid var(--accent-hi)}
-  .kp-block .kp-h{font-size:12.5px;font-weight:800;letter-spacing:.5px;color:var(--accent-hi);margin-bottom:7px}
-  .kp-block .kp-body{font-size:14px;color:var(--text-2);line-height:1.8;white-space:pre-wrap}
+  .kp-block{margin-top:14px;border-radius:12px;background:var(--surface-3);
+    border:1px solid var(--border);border-left:3px solid var(--accent-hi);overflow:hidden}
+  .kp-block .kp-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:12px 14px;font-size:12.5px;font-weight:800;letter-spacing:.5px;color:var(--accent-hi);
+    background:none;border:none;cursor:pointer;text-align:left}
+  .kp-block .kp-toggle .kp-chev{transition:transform .25s ease;font-size:11px;opacity:.85;flex:none}
+  .kp-block.open .kp-toggle .kp-chev{transform:rotate(180deg)}
+  .kp-block .kp-body{max-height:0;overflow:hidden;opacity:0;font-size:14px;color:var(--text-2);
+    line-height:1.8;white-space:pre-wrap;transition:max-height .35s ease,opacity .3s ease,padding .3s ease}
+  .kp-block.open .kp-body{max-height:1400px;opacity:1;padding:0 14px 14px}
   .vnote{margin-top:12px;padding:10px 13px;border-radius:12px;font-size:13.5px;line-height:1.7;
     background:var(--accent-soft);border:1px solid var(--border);color:var(--text-2)}
   .vnote .vnote-tag{color:var(--accent);font-weight:800;margin-right:2px}
@@ -703,7 +709,10 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
   // 每日一题：知识点梳理（与解析分开的专属区块）
   const kpBlockHtml = q=>{
     if(q.source!=="daily" || !q.kpSummary) return "";
-    return `<div class="kp-block"><div class="kp-h">📌 知识点梳理</div><div class="kp-body">${esc(q.kpSummary)}</div></div>`;
+    return `<div class="kp-block">
+      <button type="button" class="kp-toggle" aria-expanded="false">📌 知识点梳理<span class="kp-chev">▾</span></button>
+      <div class="kp-body">${esc(q.kpSummary)}</div>
+    </div>`;
   };
   // 切换科目/区域后，滚动到筛选区顶部（而非页面绝对顶部），让 controls 正好露在导航下方
   function scrollToControls(){
@@ -1468,6 +1477,16 @@ window.QUESTIONS = [{"id":"d_ds_1","source":"daily","subject":"ds","subjectName"
     if(cpClose) cpClose.onclick=()=>contactPop.classList.remove("show");
     contactPop.onclick=(e)=>{ if(e.target===contactPop) contactPop.classList.remove("show"); };
   }
+
+  // ---------- 知识点梳理折叠 ----------
+  document.addEventListener("click", e=>{
+    const t=e.target.closest(".kp-toggle");
+    if(!t) return;
+    const block=t.closest(".kp-block");
+    if(!block) return;
+    const open=block.classList.toggle("open");
+    t.setAttribute("aria-expanded", open? "true":"false");
+  });
 
   // ---------- init ----------
   renderStats();
