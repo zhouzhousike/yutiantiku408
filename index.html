@@ -7,17 +7,17 @@
 <style>
   /* ============ THEME TOKENS ============ */
   :root[data-theme="dark"]{
-    --bg:#0d0d0e; --bg2:#161514;
-    --surface:rgba(34,32,30,.70); --surface-2:rgba(44,41,38,.66); --surface-3:rgba(60,56,52,.60); --surface-light:rgba(255,255,255,.06); --surface-light-2:rgba(255,255,255,.04);
+    --bg:#0c0e11; --bg2:#15181d;
+    --surface:rgba(34,39,46,.70); --surface-2:rgba(44,50,58,.66); --surface-3:rgba(58,64,74,.60); --surface-light:rgba(255,255,255,.06); --surface-light-2:rgba(255,255,255,.04);
     --border:rgba(255,255,255,.09);
     --border-strong:rgba(255,255,255,.16);
-    --text:#f4f2ef; --text-2:#c6c0b8; --text-3:#8c867d;
-    --accent:#d7895d; --accent-hi:#e8a77c; --accent-soft:rgba(215,137,93,.16);
-    --on-accent:#0f0a08;
+    --text:#edf1f6; --text-2:#b3bdca; --text-3:#79838f;
+    --accent:#5fa8d3; --accent-hi:#8ec8e8; --accent-soft:rgba(95,168,211,.16);
+    --on-accent:#0a1419;
     --correct:#34d399; --correct-bg:rgba(52,211,153,.12);
     --wrong:#f87171; --wrong-bg:rgba(248,113,113,.10);
     --shadow:0 4px 24px rgba(0,0,0,.50);
-    --shadow-hover:0 8px 40px rgba(215,137,93,.12), 0 16px 48px rgba(0,0,0,.55);
+    --shadow-hover:0 8px 40px rgba(95,168,211,.14), 0 16px 48px rgba(0,0,0,.55);
     --blob-o:0;
   }
   :root[data-theme="light"]{
@@ -67,7 +67,7 @@
   @media (prefers-reduced-motion:reduce){ .scene{transition:none!important} }
 
   /* glass nav for both themes */
-  :root[data-theme="dark"] .top{background:rgba(24,23,22,.74);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  :root[data-theme="dark"] .top{background:rgba(18,22,28,.74);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
     border-bottom-color:rgba(255,255,255,.09);color:var(--text)}
   :root[data-theme="light"] .top{background:rgba(255,255,255,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
     border-bottom-color:var(--border);color:var(--text)}
@@ -457,7 +457,7 @@
     backdrop-filter:blur(18px);
     -webkit-backdrop-filter:blur(18px);
   }
-  :root[data-theme="dark"] .card:hover{box-shadow:0 12px 48px rgba(0,0,0,.5),0 0 0 1px rgba(215,137,93,.12)}
+  :root[data-theme="dark"] .card:hover{box-shadow:0 12px 48px rgba(0,0,0,.5),0 0 0 1px rgba(95,168,211,.14)}
   :root[data-theme="dark"] .b-zone{background:rgba(186,140,80,.20);color:#d8b26a;border-color:rgba(186,140,80,.44)}
   :root[data-theme="dark"] .btn{
     background:var(--surface-2);
@@ -549,7 +549,7 @@
   .celebrate.show .cmodal{transform:scale(1)}
   .cemoji{font-size:68px;line-height:1;animation:cepop .6s cubic-bezier(.16,1,.3,1) both;
     filter:drop-shadow(0 6px 18px rgba(91,163,232,.35))}
-  :root[data-theme="dark"] .cemoji{filter:drop-shadow(0 6px 18px rgba(215,137,93,.35))}
+  :root[data-theme="dark"] .cemoji{filter:drop-shadow(0 6px 18px rgba(95,168,211,.35))}
   @keyframes cepop{0%{transform:scale(0) rotate(-18deg);opacity:0}60%{transform:scale(1.28)}100%{transform:scale(1)}}
   .ctitle{font-size:27px;font-weight:800;margin-top:16px;color:var(--text);letter-spacing:1px}
   .csub{font-size:15px;color:var(--text-2);margin-top:9px}
