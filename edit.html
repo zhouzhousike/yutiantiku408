@@ -818,23 +818,27 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
   // 数学（含 Unicode 上标如 2ⁿ⁺¹）、中文、协议名（CSMA/CD）等均不误包。
   const CODE_KW = /\b(?:int|short|char|float|double|long|void|unsigned|signed|for|while|if|else|return|struct|typedef|enum|union|static|const|mov|add|sub|jmp|push|pop|call|cmp|lea|inc|dec|mul|div|and|or|xor|shl|shr|nop)\b/;
   const CODE_MARK = /[;]|->|=>|::/;
+  // Unicode 上下标字符 → HTML <sup>/<sub>（跨平台稳定显示"次方/下标"，避免 ½ 等字符在某些字体下变方框）
+  const SUP_MAP = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁺':'+','⁻':'-','ⁿ':'n','ⁱ':'i','⁽':'(','½':'1/2','¼':'1/4','¾':'3/4'};
+  const SUB_MAP = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9','ₐ':'a','ₑ':'e','ₕ':'h','ᵢ':'i','ₖ':'k','ₗ':'l','ₘ':'m','ₙ':'n','ₒ':'o','ₚ':'p','ᵣ':'r','ₛ':'s','ₜ':'t'};
+  const sups = t=>{ let o=""; for(const ch of t){ if(SUP_MAP[ch]) o+='<sup>'+SUP_MAP[ch]+'</sup>'; else if(SUB_MAP[ch]) o+='<sub>'+SUB_MAP[ch]+'</sub>'; else o+=ch; } return o; };
   const rich = text=>{
     if(text==null) return "";
     let out="", last=0, m, re=/([\x20-\x7E\n]+)/g;
     while((m=re.exec(text))){
       const run=m[0];
-      out += esc(text.slice(last, m.index));
+      out += sups(esc(text.slice(last, m.index)));
       const isCode = CODE_MARK.test(run) || CODE_KW.test(run);
       if(isCode && run.includes("\n")){
         out += '<pre class="icode-block">'+esc(run.trim())+'</pre>';
       } else if(isCode){
         out += '<code class="icode">'+esc(run)+'</code>';
       } else {
-        out += esc(run);
+        out += sups(esc(run));
       }
       last = m.index + run.length;
     }
-    out += esc(text.slice(last));
+    out += sups(esc(text.slice(last)));
     return out;
   };
   const isFav = id=>fav.has(id);
@@ -1149,7 +1153,7 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     c.appendChild(el("div","stem",rich(q.stem)));
     const opts=el("div","opts");
     Object.keys(q.options||{}).sort().forEach(k=>{
-      opts.appendChild(el("div","opt",`<span class="k">${k}</span><span>${esc(q.options[k])}</span>`));
+      opts.appendChild(el("div","opt",`<span class="k">${k}</span><span>${rich(q.options[k])}</span>`));
     });
     c.appendChild(opts);
 
@@ -1228,7 +1232,7 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     Object.keys(q.options||{}).sort().forEach(k=>{
       const o=el("div","popt"); o.dataset.k=k;
       const st = state.revealed ? (correct.includes(k) ? '<span class="popt-status ok">✓</span>' : (state.selected===k ? '<span class="popt-status no">✗</span>' : '')) : '';
-      o.innerHTML=`<span class="k">${k}</span><span>${esc(q.options[k])}</span>${st}`;
+      o.innerHTML=`<span class="k">${k}</span><span>${rich(q.options[k])}</span>${st}`;
       if(!state.revealed){
         o.onclick=()=>selectOpt(k);
       }else{
@@ -1399,7 +1403,7 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     Object.keys(q.options||{}).sort().forEach(k=>{
       const o=el("div","r-opt"); o.dataset.k=k;
       const st = randState.revealed ? (correct.includes(k) ? '<span class="r-opt-status ok">✓</span>' : (randState.selected===k ? '<span class="r-opt-status no">✗</span>' : '')) : '';
-      o.innerHTML=`<span class="k">${k}</span><span>${esc(q.options[k])}</span>${st}`;
+      o.innerHTML=`<span class="k">${k}</span><span>${rich(q.options[k])}</span>${st}`;
       if(!randState.revealed){
         o.onclick=()=>{ randState.selected=k; ro.querySelectorAll(".r-opt").forEach(x=>x.classList.toggle("sel",x.dataset.k===k)); };
       }else{
