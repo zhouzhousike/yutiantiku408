@@ -612,6 +612,10 @@
   .edit-mini:hover{border-color:var(--accent);color:var(--accent)}
   /* ---------- 择校模块 ---------- */
   .school-wrap{max-width:1120px;margin:0 auto;padding:10px 0 28px}
+  .school-intro{background:var(--surface-2,#fff);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:6px}
+  .school-intro .si-title{font-size:20px;font-weight:800;color:var(--text)}
+  .school-intro .si-note{font-size:13px;color:var(--text-2);margin-top:6px;line-height:1.65}
+  .school-intro .si-note b{color:var(--accent)}
   .school-count{font-size:13px;color:var(--text-2);margin:16px 2px 10px}
   .school-count b{color:var(--accent)}
   .school-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:14px}
@@ -1123,6 +1127,7 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
   function renderModuleTitle(){
     const mt=$("#modTitle");
     if(!mt) return;
+    if(state.module==="school"){ mt.innerHTML=""; return; }
     mt.innerHTML=`<span class="mod-pill">${esc(MODULE_NAME[state.module] || state.module)}</span>`;
   }
 
@@ -1342,7 +1347,7 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
     const provs=[...new Set(SCHOOLS.map(s=>s.province).filter(Boolean))].sort();
     c.appendChild(mkSel("全部省份","province",provs.map(p=>[p,p])));
     c.appendChild(mkSel("全部层次","tier",[["985","985"],["211","211"],["研究所","研究所"],["双非","双非"]]));
-    c.appendChild(mkSel("专业课","exam",[["408","考408"],["自命题","自命题"]]));
+    c.appendChild(mkSel("专业课","exam",[["408","408"],["自命题","自命题"]]));
     c.appendChild(mkSel("全部类型","type",[["first","仅一志愿"],["adj","含调剂"]]));
     c.appendChild(mkSel("全部学位","degree",[["专硕","专硕"],["学硕","学硕"]]));
     c.appendChild(mkSel("英语","eng",[["英语一","英语一"],["英语二","英语二"]]));
@@ -1357,6 +1362,9 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
   }
   function renderSchool(){
     const wrap=el("div","school-wrap");
+    wrap.appendChild(el("div","school-intro",
+      `<div class="si-title">🎓 408 考研择校参考</div>`+
+      `<div class="si-note">数据聚合自《27计算机考研择校表》与《院校信息》，覆盖 985 / 211 / 研究所等院校的 <b>26 复试线、统考录取人数、是否考 408、一志愿 / 调剂、改考 / 新增备注</b>；点击校名或「查看完整信息」可弹出<b>全部学院 / 专业 / 方向</b>明细。复试线取院线区间，录取人数为统考合计（部分未单列显示为空）。<b>仅供参考，最终以院校研招网当年公告为准。</b></div>`));
     if(schoolCmp.length){
       const bar=el("div","cmp-bar");
       bar.innerHTML=`<span class="cmp-bar-txt">已选对比（${schoolCmp.length}/3）：</span>`+
