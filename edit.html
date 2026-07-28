@@ -621,6 +621,8 @@
   .school-card:hover{transform:translateY(-3px);border-color:var(--accent)}
   .sc-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .sc-head h3{font-size:16px;margin:0;color:var(--text)}
+  .sc-name{cursor:pointer;transition:color .15s}
+  .sc-name:hover{color:var(--accent)}
   .badge-row{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 6px}
   .s-badge{font-size:12px;padding:2px 9px;border-radius:999px;white-space:nowrap;font-weight:600}
   .s-badge.t985{background:#fde68a;color:#92400e}
@@ -630,11 +632,14 @@
   .s-badge.reg{background:var(--surface-light,#eee);color:var(--text-2)}
   .s-badge.e408{background:#dcfce7;color:#166534}
   .s-badge.eself{background:var(--surface-light,#eee);color:var(--text-2);border:1px solid var(--border)}
-  .sc-meta{display:flex;gap:20px;margin:6px 0;font-size:13px;color:var(--text)}
-  .sc-meta .k{color:var(--text-3);margin-right:6px}
-  .sc-meta .v{font-weight:700}
-  .sc-note{font-size:12.5px;color:var(--text-2);line-height:1.6;border-top:1px dashed var(--border);padding-top:9px;margin-top:4px}
-  .school-card.open{border-color:var(--accent);box-shadow:0 6px 20px rgba(15,23,42,.1)}
+  .sc-info{display:grid;grid-template-columns:repeat(2,1fr);gap:7px 10px;margin-top:10px;font-size:12.5px}
+  .sc-info>div{display:flex;align-items:baseline;gap:6px;min-width:0}
+  .sc-info .sc-label{flex:0 0 auto;color:var(--text-3);font-size:12px;white-space:nowrap}
+  .sc-info .sc-val{flex:1 1 auto;color:var(--text);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sc-info .sd-408{color:#166534}
+  .sc-info .sd-self{color:var(--text-2)}
+  .sc-note-line{grid-column:1/-1}
+  .sc-note-line .sc-val{font-weight:500;color:var(--text-2);white-space:normal;line-height:1.55}
   .sc-actions{display:flex;gap:8px;margin-top:12px}
   .sc-actions .btn{flex:1;font-size:12.5px;padding:7px 6px;cursor:pointer;border-radius:9px;border:1px solid var(--border);background:var(--surface-2,#fff);color:var(--text);transition:.15s}
   .sc-actions .btn:hover{border-color:var(--accent);color:var(--accent)}
@@ -816,7 +821,7 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
   const SCHOOLS = window.SCHOOLS || [];
   const schoolFilter = {province:"all", tier:"all", exam:"all", line:"all", type:"all", eng:"all", math:"all", q:""};
   let schoolCmp = [];        // 对比候选（校名 clean_name），最多 3 所
-  let schoolOpen = null;     // 当前下钻展开的校名
+  let schoolOpen = null;     // 保留兼容（当前卡片点击直接弹完整信息）
   // lecture(章节名) -> 所属科目 key，用于在“全部科目”下区分同名章节
   const LECT_SUBJ = {};
   Q.forEach(q=>{ if(q.lecture && !LECT_SUBJ[q.lecture]) LECT_SUBJ[q.lecture]=q.subject; });
@@ -1256,6 +1261,19 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     if(/\b0812/.test(m) || /\b0835/.test(m) || /\b0775/.test(m) || /\b0701/.test(m)) return "学硕";
     return "-";
   }
+  function repProgram(s){
+    const progs=s.programs||[];
+    if(!progs.length) return null;
+    return progs.slice().sort((a,b)=> (b.admit||0)-(a.admit||0))[0];
+  }
+  function lineText(p){
+    if(!p) return "-";
+    if(p.line26) return String(p.line26);
+    if(p.lineMin!=null && p.lineMax!=null){
+      return p.lineMin===p.lineMax?String(p.lineMax):`${p.lineMin}–${p.lineMax}`;
+    }
+    return "-";
+  }
   function schoolInCmp(name){ return schoolCmp.includes(name); }
   function toggleSchoolCmp(name){
     const i=schoolCmp.indexOf(name);
@@ -1311,7 +1329,7 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     const wrap=el("div","school-wrap");
     wrap.appendChild(el("div","school-intro",
       `<div class="si-title">🎓 408 考研择校参考</div>`+
-      `<div class="si-note">数据聚合自《27计算机考研择校表》与《院校信息》，覆盖 985 / 211 / 研究所等院校的 <b>26 复试线、统考录取人数、是否考 408、一志愿 / 调剂、改考 / 新增备注</b>；点击卡片可下钻查看<b>学院 / 专业级</b>明细。复试线取院线区间，录取人数为统考合计（部分未单列显示为空）。<b>仅供参考，最终以院校研招网当年公告为准。</b></div>`));
+      `<div class="si-note">数据聚合自《27计算机考研择校表》与《院校信息》，覆盖 985 / 211 / 研究所等院校的 <b>26 复试线、统考录取人数、是否考 408、一志愿 / 调剂、改考 / 新增备注</b>；点击校名或「查看完整信息」可弹出<b>全部学院 / 专业 / 方向</b>明细。复试线取院线区间，录取人数为统考合计（部分未单列显示为空）。<b>仅供参考，最终以院校研招网当年公告为准。</b></div>`));
     if(schoolCmp.length){
       const bar=el("div","cmp-bar");
       bar.innerHTML=`<span class="cmp-bar-txt">已选对比（${schoolCmp.length}/3）：</span>`+
@@ -1333,27 +1351,39 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
       grid.appendChild(el("div","fav-empty",`<div class="big">🔍</div><div>没有符合条件的院校，放宽筛选试试～</div>`));
     }
     list.forEach(s=>{
-      const card=el("div","school-card"+(schoolOpen===s.name?" open":""));
+      const card=el("div","school-card");
       const tierCls = s.tier==="985"?"t985":s.tier==="211"?"t211":s.tier==="研究所"?"tins":s.tier==="双非"?"tother":"tother";
       const examCls = s.exam==="408"?"e408":"eself";
-      const lineTxt = (s.lineMin&&s.lineMax)?(s.lineMin===s.lineMax?String(s.lineMax):`${s.lineMin}–${s.lineMax}`):"-";
-      const admitTxt = s.admit?String(s.admit)+" 人":"-";
-      const pcount = (s.programs||[]).length;
+      const p=repProgram(s);
+      const deg=p?parseDegree(p.major):"-";
+      const engTxt=(s.engs&&s.engs.length)?s.engs.join("/"):(p&&p.eng?p.eng:"");
+      const mathTxt=(s.maths&&s.maths.length)?s.maths.join("/"):(p&&p.math?p.math:"");
+      const pub=[engTxt,mathTxt].filter(Boolean).join("/")||"-";
+      const examTxt=p?(p.exam||"-"):(s.exam==="408"?"408":"自命题");
+      const line=lineText(p);
+      const avg=p&&p.avg!=null?String(p.avg):"-";
+      const admit=p&&p.admit!=null?String(p.admit):"-";
+      const ratio=p&&p.ratio?p.ratio:"-";
       const inCmp = schoolInCmp(s.name);
-      const engTxt = (s.engs&&s.engs.length)? s.engs.join("/") : "";
-      const mathTxt = (s.maths&&s.maths.length)? s.maths.join("/") : "";
-      const pubBadges = (engTxt?`<span class="s-badge pub">${esc(engTxt)}</span>`:"") + (mathTxt?`<span class="s-badge pub">${esc(mathTxt)}</span>`:"");
       card.innerHTML=
-        `<div class="sc-head"><h3>${esc(s.name)}</h3><span class="s-badge ${tierCls}">${esc(s.tier)}</span></div>`+
-        `<div class="badge-row"><span class="s-badge reg">📍 ${esc(s.province||"-")}</span><span class="s-badge ${examCls}">${esc(s.exam==="408"?"考408":"自命题")}</span>${pubBadges}</div>`+
-        `<div class="sc-meta"><div><span class="k">26复试线</span><span class="v">${esc(lineTxt)}</span></div><div><span class="k">统考录取</span><span class="v">${esc(admitTxt)}</span></div><div><span class="k">专业数</span><span class="v">${esc(pcount)}</span></div></div>`+
-        (s.note?`<div class="sc-note">${esc(s.note)}</div>`:"")+
-        `<div class="sc-actions"><button class="btn sc-toggle">${schoolOpen===s.name?"收起明细 ▲":"下钻学院/专业 ▼"}</button><button class="btn ${inCmp?"cmp-on":""}" data-cmp="${esc(s.name)}">${inCmp?"✓ 已加对比":"＋ 对比"}</button></div>`;
-      card.querySelector(".sc-toggle").onclick=(e)=>{ e.stopPropagation(); schoolOpen = schoolOpen===s.name?null:s.name; renderMain(); };
+        `<div class="sc-head"><h3 class="sc-name">${esc(s.name)}</h3><span class="s-badge ${tierCls}">${esc(s.tier)}</span></div>`+
+        `<div class="sc-info">`+
+          `<div><span class="sc-label">地区</span><span class="sc-val">${esc(s.province||"-")}</span></div>`+
+          `<div><span class="sc-label">学院</span><span class="sc-val">${esc(p&&p.college?p.college:"-")}</span></div>`+
+          `<div><span class="sc-label">专业</span><span class="sc-val">${esc(p&&p.major?p.major:"-")}</span></div>`+
+          `<div><span class="sc-label">学位</span><span class="sc-val">${esc(deg)}</span></div>`+
+          `<div><span class="sc-label">数学/英语</span><span class="sc-val">${esc(pub)}</span></div>`+
+          `<div><span class="sc-label">专业课</span><span class="sc-val ${p&&(p.exam==="408"?"sd-408":"sd-self")}">${esc(examTxt)}</span></div>`+
+          `<div><span class="sc-label">复试线</span><span class="sc-val">${esc(line)}</span></div>`+
+          `<div><span class="sc-label">录取均分</span><span class="sc-val">${esc(avg)}</span></div>`+
+          `<div><span class="sc-label">统考招生</span><span class="sc-val">${esc(admit)}</span></div>`+
+          `<div><span class="sc-label">报录比</span><span class="sc-val">${esc(ratio)}</span></div>`+
+          (s.note?`<div class="sc-note-line"><span class="sc-label">备注</span><span class="sc-val">${esc(s.note)}</span></div>`:"")+
+        `</div>`+
+        `<div class="sc-actions"><button class="btn sc-view">查看完整信息</button><button class="btn ${inCmp?"cmp-on":""}" data-cmp="${esc(s.name)}">${inCmp?"✓ 已加对比":"＋ 对比"}</button></div>`;
+      card.querySelector(".sc-name").onclick=(e)=>{ e.stopPropagation(); openSchoolDetail(s); };
+      card.querySelector(".sc-view").onclick=(e)=>{ e.stopPropagation(); openSchoolDetail(s); };
       card.querySelector("[data-cmp]").onclick=(e)=>{ e.stopPropagation(); toggleSchoolCmp(s.name); };
-      if(schoolOpen===s.name){
-        card.appendChild(renderSchoolDetail(s));
-      }
       grid.appendChild(card);
     });
     wrap.appendChild(grid);
@@ -1384,17 +1414,7 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
   function renderSchoolCompare(){
     const schools=schoolCmp.map(n=>SCHOOLS.find(x=>x.name===n)).filter(Boolean);
     const cols=schools.length||1;
-    const fields=[
-      ["层次", s=>s.tier||"-"],
-      ["地区", s=>s.province||"-"],
-      ["专业课", s=>s.exam==="408"?"408":"自命题"],
-      ["公共课", s=>[...(s.engs||[]),...(s.maths||[])].join(" / ")||"-"],
-      ["26复试线", s=>(s.lineMin&&s.lineMax)?(s.lineMin===s.lineMax?String(s.lineMax):`${s.lineMin}-${s.lineMax}`):"-"],
-      ["统考招生", s=>s.admit?`${s.admit} 人`:"-"],
-      ["专业数", s=>(s.programs||[]).length+" 个"],
-      ["备注", s=>s.note||"-"],
-      ["补充信息", s=>s.extra||"-"]
-    ];
+    const rows=(label,fn)=>`<div class="cmp-row"><span class="cmp-metric">${esc(label)}</span>`+schools.map(fn).join("")+`</div>`;
     const backdrop=el("div","cmp-modal-backdrop");
     const modal=el("div","cmp-modal");
     modal.innerHTML=
@@ -1406,20 +1426,20 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     const grid=modal.querySelector("#cmpGrid");
     grid.style.setProperty("--cmp-cols", cols);
     grid.innerHTML=
-      `<div class="cmp-row cmp-head">`+
-        `<span class="cmp-metric">项目</span>`+
-        schools.map(s=>`<span class="cmp-sname">${esc(s.name)}</span>`).join("")+
-      `</div>`+
-      fields.map(([label,fn])=>
-        `<div class="cmp-row">`+
-          `<span class="cmp-metric">${esc(label)}</span>`+
-          schools.map(s=>`<span class="cmp-val">${esc(String(fn(s)))}</span>`).join("")+
-        `</div>`
-      ).join("")+
-      `<div class="cmp-row cmp-actions">`+
-        `<span class="cmp-metric"></span>`+
-        schools.map(s=>`<span class="cmp-val"><button class="btn cmp-detail-btn" data-n="${esc(s.name)}">查看完整信息</button></span>`).join("")+
-      `</div>`;
+      `<div class="cmp-row cmp-head"><span class="cmp-metric">项目</span>`+schools.map(s=>`<span class="cmp-sname">${esc(s.name)}</span>`).join("")+`</div>`+
+      rows("层次", s=>`<span class="cmp-val">${esc(s.tier||"-")}</span>`)+
+      rows("地区", s=>`<span class="cmp-val">${esc(s.province||"-")}</span>`)+
+      rows("学院", s=>{ const p=repProgram(s); return `<span class="cmp-val">${esc(p&&p.college?p.college:"")}</span>`; })+
+      rows("专业", s=>{ const p=repProgram(s); return `<span class="cmp-val">${esc(p&&p.major?p.major:"")}</span>`; })+
+      rows("学位", s=>{ const p=repProgram(s); return `<span class="cmp-val">${esc(p?parseDegree(p.major):"-")}</span>`; })+
+      rows("数学/英语", s=>{ const p=repProgram(s); const v=p?[(p.eng||""),(p.math||"")].filter(Boolean).join("/"):"-"; return `<span class="cmp-val">${esc(v)}</span>`; })+
+      rows("专业课", s=>{ const p=repProgram(s); return `<span class="cmp-val">${esc(p?(p.exam||"-"):(s.exam==="408"?"408":"自命题"))}</span>`; })+
+      rows("复试线", s=>`<span class="cmp-val">${esc(lineText(repProgram(s)))}</span>`)+
+      rows("录取均分", s=>{ const p=repProgram(s); return `<span class="cmp-val">${esc(p&&p.avg!=null?String(p.avg):"-")}</span>`; })+
+      rows("统考招生", s=>{ const p=repProgram(s); return `<span class="cmp-val">${esc(p&&p.admit!=null?String(p.admit):"-")}</span>`; })+
+      rows("报录比", s=>{ const p=repProgram(s); return `<span class="cmp-val">${esc(p&&p.ratio?p.ratio:"-")}</span>`; })+
+      rows("备注", s=>`<span class="cmp-val">${esc(s.note||"-")}</span>`)+
+      `<div class="cmp-row cmp-actions"><span class="cmp-metric"></span>`+schools.map(s=>`<span class="cmp-val"><button class="btn cmp-detail-btn" data-n="${esc(s.name)}">查看完整信息</button></span>`).join("")+`</div>`;
     const close=()=>{ backdrop.remove(); state.schoolCmpView=false; renderMain(); };
     modal.querySelector(".cmp-modal-close").onclick=close;
     modal.querySelector(".cmp-back").onclick=close;
