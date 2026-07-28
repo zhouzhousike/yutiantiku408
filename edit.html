@@ -704,15 +704,26 @@
   .sd-close{border:none;background:transparent;font-size:22px;line-height:1;color:var(--text-3);cursor:pointer;padding:2px 6px;border-radius:8px}
   .sd-close:hover{background:var(--surface);color:var(--text)}
   .sd-body{flex:1 1 auto;overflow:auto;padding:16px 18px}
-  .sd-table{font-size:12.5px;border:1px solid var(--border);border-radius:10px;overflow:hidden;min-width:920px}
-  .sd-row{display:grid;grid-template-columns:1.3fr 1.3fr 1fr .7fr .8fr .9fr .8fr .6fr .6fr .7fr .7fr;gap:6px;padding:7px 9px;border-top:1px solid var(--border)}
+  .sd-table{font-size:13px;border:1px solid var(--border);border-radius:10px;overflow:hidden;min-width:880px;margin-top:2px}
+  .sd-row{display:grid;grid-template-columns:1.6fr 1.3fr .8fr .9fr 1fr .8fr .9fr .7fr .9fr .8fr;gap:8px;padding:10px 13px;border-top:1px solid var(--border);align-items:center}
   .sd-row:first-child{border-top:none}
-  .sd-th{background:var(--surface-light,#f3f4f6);font-weight:700;color:var(--text);position:sticky;top:0}
+  .sd-th{background:var(--surface-light,#f3f4f6);font-weight:700;color:var(--text)}
   .sd-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sd-row .tp-adj{color:#b45309;font-weight:700}
   .sd-row .tp-first{color:#15803d;font-weight:700}
   .sd-row .tp-na{color:var(--text-3)}
   .sd-empty{font-size:13px;color:var(--text-3);padding:12px 0}
+  /* 按学院分组（可折叠，宽松排版） */
+  .sd-groups{display:flex;flex-direction:column}
+  .sd-group{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;background:var(--surface-2,#fff)}
+  .sd-group-head{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--surface-light,#f8fafc);cursor:pointer;user-select:none;transition:background .15s}
+  .sd-group-head:hover{background:var(--surface,#eef2f7)}
+  .sd-group-name{font-size:14.5px;font-weight:800;color:var(--text);flex:0 0 auto}
+  .sd-group-meta{font-size:12.5px;color:var(--text-2);flex:1 1 auto}
+  .sd-group-arrow{font-size:12px;color:var(--text-3);transition:transform .2s;flex:0 0 auto;transform:rotate(0deg)}
+  .sd-group.open .sd-group-arrow{transform:rotate(90deg)}
+  .sd-group-body{display:none;padding:12px 14px}
+  .sd-group.open .sd-group-body{display:block}
   .cmp-back{font-size:13px;padding:8px 16px;cursor:pointer;border-radius:9px;border:1px solid var(--border);background:var(--surface-2,#fff);color:var(--text)}
 
 </style>
@@ -1461,30 +1472,49 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     if(!progs.length){
       rows=`<div class="sd-empty">暂无学院 / 专业级明细</div>`;
     } else {
-      rows=`<div class="sd-table">`+
-        `<div class="sd-row sd-th"><span>学院</span><span>专业</span><span>方向</span><span>学位</span><span>专业课</span><span>公共课</span><span>26线</span><span>录取</span><span>均分</span><span>报录比</span><span>类型</span></div>`+
-        progs.map(p=>{
-          const deg=parseDegree(p.major);
-          const pub=[p.eng,p.math].filter(Boolean).join("/")||"-";
-          const lt=p.line26?p.line26:"-";
-          const at=p.admit!=null?String(p.admit):"-";
-          const avg=p.avg!=null?String(p.avg):"-";
-          const ra=p.ratio?p.ratio:"-";
-          const tp=p.type||"-";
-          const tpCls=tp.includes("调剂")?"tp-adj":(tp.includes("一志愿")?"tp-first":"tp-na");
-          return `<div class="sd-row">`+
-            `<span>${esc(p.college||"-")}</span><span>${esc(p.major||"-")}</span><span>${esc(p.dir||"-")}</span>`+
-            `<span>${esc(deg)}</span><span>${esc(p.exam||"-")}</span><span>${esc(pub)}</span>`+
-            `<span>${esc(lt)}</span><span>${esc(at)}</span><span>${esc(avg)}</span><span>${esc(ra)}</span>`+
-            `<span class="${tpCls}">${esc(tp)}</span>`+
-          `</div>`;
-        }).join("")+
-      `</div>`;
+      // 按学院分组（保持出现顺序）
+      const groups=new Map();
+      progs.forEach(p=>{
+        const c=(p.college||"").trim()||"未分组";
+        if(!groups.has(c)) groups.set(c,[]);
+        groups.get(c).push(p);
+      });
+      const rowHtml=p=>{
+        const deg=parseDegree(p.major);
+        const pub=[p.eng,p.math].filter(Boolean).join("/")||"-";
+        const lt=p.line26?p.line26:"-";
+        const at=p.admit!=null?String(p.admit):"-";
+        const avg=p.avg!=null?String(p.avg):"-";
+        const ra=p.ratio?p.ratio:"-";
+        const tp=p.type||"-";
+        const tpCls=tp.includes("调剂")?"tp-adj":(tp.includes("一志愿")?"tp-first":"tp-na");
+        return `<div class="sd-row">`+
+          `<span>${esc(p.major||"-")}</span><span>${esc(p.dir||"-")}</span>`+
+          `<span>${esc(deg)}</span><span>${esc(p.exam||"-")}</span><span>${esc(pub)}</span>`+
+          `<span>${esc(lt)}</span><span>${esc(at)}</span><span>${esc(avg)}</span><span>${esc(ra)}</span>`+
+          `<span class="${tpCls}">${esc(tp)}</span>`+
+        `</div>`;
+      };
+      const headRow=`<div class="sd-row sd-th"><span>专业</span><span>方向</span><span>学位</span><span>专业课</span><span>公共课</span><span>26线</span><span>录取</span><span>均分</span><span>报录比</span><span>类型</span></div>`;
+      let gi=0;
+      rows=`<div class="sd-groups">`+[...groups.entries()].map(([col,ps])=>{
+        const sorted=ps.slice().sort((a,b)=>(b.admit||0)-(a.admit||0));
+        const admitSum=sorted.reduce((t,p)=>t+(p.admit||0),0);
+        const open=gi===0?"open":"";
+        const arrow=gi===0?"▾":"▸";
+        gi++;
+        return `<div class="sd-group ${open}">`+
+          `<div class="sd-group-head"><span class="sd-group-name">${esc(col)}</span>`+
+          `<span class="sd-group-meta">${sorted.length} 个专业 · 统考录取合计 ${admitSum} 人</span>`+
+          `<span class="sd-group-arrow">${arrow}</span></div>`+
+          `<div class="sd-group-body"><div class="sd-table">`+headRow+sorted.map(rowHtml).join("")+`</div></div>`+
+        `</div>`;
+      }).join("")+`</div>`;
     }
     let extraHtml="";
     if(s.extra){
       const lines=String(s.extra).split(/[；;]/).map(x=>x.trim()).filter(Boolean);
-      extraHtml=`<div class="sc-extra" style="margin-top:12px"><span class="k">补充信息</span><div class="sc-extra-lines">`+
+      extraHtml=`<div class="sc-extra" style="margin-top:14px"><span class="k">补充信息</span><div class="sc-extra-lines">`+
         lines.map(l=>`<div>• ${esc(l)}</div>`).join("")+`</div></div>`;
     }
     modal.innerHTML=
@@ -1495,6 +1525,13 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
       `<div class="sd-body">`+rows+extraHtml+`</div>`;
     const close=()=> backdrop.remove();
     modal.querySelector(".sd-close").onclick=close;
+    modal.querySelectorAll(".sd-group-head").forEach(h=>{
+      h.onclick=()=>{
+        const g=h.parentElement;
+        const open=g.classList.toggle("open");
+        h.querySelector(".sd-group-arrow").textContent=open?"▾":"▸";
+      };
+    });
     backdrop.appendChild(modal);
     backdrop.onclick=(e)=>{ if(e.target===backdrop) close(); };
     document.body.appendChild(backdrop);
