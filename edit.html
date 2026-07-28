@@ -104,6 +104,8 @@
     color:var(--on-accent);font-size:11px;font-weight:800;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 
   /* ============ HERO ============ */
+  /* 非首页模块隐藏 Hero 区域，让择校等模块独占内容区 */
+  .wrap[data-module="school"] .hero,.wrap[data-module="bank"] .hero,.wrap[data-module="real"] .hero,.wrap[data-module="wrong"] .hero,.wrap[data-module="done"] .hero,.wrap[data-module="fav"] .hero{display:none}
   .hero{padding:64px 0 30px;text-align:center}
   .hero h1{font-size:clamp(34px,6vw,58px);font-weight:800;letter-spacing:-1px;margin:20px 0 12px;line-height:1.08;font-family:'瑞云写刻','RuiYunXieKe','KaiTi','STKaiti',serif}
   .hero h1 .t2{margin:0 .22em}
@@ -769,7 +771,7 @@
     </div>
   </header>
 
-  <div class="wrap">
+  <div class="wrap" id="wrap" data-module="daily">
     <section class="hero">
       <h1><span class="t1">把</span><span class="t2 grad">408</span><span class="t3">刷成</span><span class="t4 grad ul">肌肉记忆</span></h1>
       <p>山高万仞，只登一步<br class="m-br">——宇天陪你，一天天刷上山顶</p>
@@ -2042,6 +2044,10 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     $("#favCount").textContent=fav.size;
   }
 
+  function syncWrapModule(){
+    const wrap=$("#wrap"); if(wrap) wrap.dataset.module=state.module;
+  }
+
   // ---------- module tabs ----------
   $("#tabs").querySelectorAll(".tab").forEach(t=>{
     t.onclick=()=>{
@@ -2050,6 +2056,7 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
       const mod=t.dataset.mod;
       if(mod==="fav"){ state.module="fav"; }
       else{ state.module=mod; state.view="browse"; state.subject="all"; state.lecture="all"; state.search=""; }
+      syncWrapModule();
       if(state.view==="practice"){ startPractice(); }
       renderControls(); renderMain(); renderStats();
     };
@@ -2058,6 +2065,7 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
   $("#favBtn").onclick=()=>{
     $("#tabs").querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
     state.module="fav";
+    syncWrapModule();
     renderControls(); renderMain(); renderStats();
   };
 
@@ -2255,6 +2263,7 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
   }
 
   // ---------- init ----------
+  syncWrapModule();
   renderStats();
   renderControls();
   renderMain();
