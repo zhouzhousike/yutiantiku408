@@ -659,17 +659,37 @@
   .cmp-chip .cmp-x{border:none;background:transparent;color:#fff;cursor:pointer;font-size:12px;line-height:1;padding:0 2px}
   .cmp-bar .btn{font-size:12.5px;padding:6px 12px;cursor:pointer;border-radius:9px;border:1px solid var(--border);background:var(--surface-2,#fff);color:var(--text)}
   .cmp-bar .cmp-go{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .cmp-wrap{max-width:1000px;margin:14px auto 0}
-  .cmp-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:12px}
-  .cmp-grid{border:1px solid var(--border);border-radius:12px;overflow:hidden}
-  .cmp-row{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:0}
+  .cmp-modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+  .cmp-modal{background:var(--surface-2,#fff);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(15,23,42,.25);width:min(1100px,96vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+  .cmp-modal-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface-light,#f8fafc)}
+  .cmp-modal-head h3{font-size:18px;font-weight:800;margin:0;color:var(--text)}
+  .cmp-modal-close{border:none;background:transparent;font-size:22px;line-height:1;color:var(--text-3);cursor:pointer;padding:2px 6px;border-radius:8px}
+  .cmp-modal-close:hover{background:var(--surface);color:var(--text)}
+  .cmp-modal-body{flex:1 1 auto;overflow:auto;padding:18px}
+  .cmp-grid{border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:540px;--cmp-cols:3}
+  .cmp-row{display:grid;grid-template-columns:120px repeat(var(--cmp-cols),minmax(150px,1fr));gap:0}
   .cmp-row>span{padding:11px 13px;border-top:1px solid var(--border);font-size:13px;color:var(--text);border-left:1px solid var(--border)}
   .cmp-row>span:first-child{border-left:none}
   .cmp-head{background:var(--surface-light,#f3f4f6)}
   .cmp-metric{font-weight:700;color:var(--accent);background:var(--surface-light,#f3f4f6)}
-  .cmp-sname{font-weight:800;color:var(--text)}
-  .cmp-val{line-height:1.5;word-break:break-word}
-  .cmp-back{margin-top:14px;font-size:13px;padding:8px 16px;cursor:pointer;border-radius:9px;border:1px solid var(--border);background:var(--surface-2,#fff);color:var(--text)}
+  .cmp-sname{font-weight:800;color:var(--text);text-align:center}
+  .cmp-val{line-height:1.5;word-break:break-word;text-align:center}
+  .cmp-actions .cmp-val{padding:8px 13px}
+  .cmp-detail-btn{font-size:12.5px;padding:5px 12px;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:var(--surface-2,#fff);color:var(--text)}
+  .cmp-detail-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .cmp-detail-btn.open{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .cmp-detail-panels{margin-top:16px;display:flex;flex-direction:column;gap:14px}
+  .cmp-detail-panel{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);display:none}
+  .cmp-detail-panel.show{display:block}
+  .cmp-detail-panel h4{font-size:15px;font-weight:800;margin:0 0 10px;color:var(--text)}
+  .cmp-detail-table{font-size:12px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .cmp-detail-row{display:grid;grid-template-columns:1.2fr 1.1fr 1fr .7fr .8fr .7fr .6fr .6fr .7fr .7fr;gap:5px;padding:7px 8px;border-top:1px solid var(--border)}
+  .cmp-detail-row:first-child{border-top:none}
+  .cmp-detail-th{background:var(--surface-light,#f3f4f6);font-weight:700;color:var(--text)}
+  .cmp-detail-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cmp-detail-empty{font-size:13px;color:var(--text-3);padding:10px 0}
+  .cmp-modal-foot{flex:0 0 auto;padding:12px 18px;border-top:1px solid var(--border);text-align:right;background:var(--surface-light,#f8fafc)}
+  .cmp-back{font-size:13px;padding:8px 16px;cursor:pointer;border-radius:9px;border:1px solid var(--border);background:var(--surface-2,#fff);color:var(--text)}
 
 </style>
 </head>
@@ -1208,6 +1228,15 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     if(schoolFilter.type==="first") return !hasAdj;
     return true;
   }
+  function parseDegree(major){
+    if(!major) return "-";
+    const m = String(major);
+    if(/专业学位/.test(m)) return "专硕";
+    if(/学术学位/.test(m)) return "学硕";
+    if(/\b0854/.test(m) || /\b0860/.test(m)) return "专硕";
+    if(/\b0812/.test(m) || /\b0835/.test(m) || /\b0775/.test(m) || /\b0701/.test(m)) return "学硕";
+    return "-";
+  }
   function schoolInCmp(name){ return schoolCmp.includes(name); }
   function toggleSchoolCmp(name){
     const i=schoolCmp.indexOf(name);
@@ -1272,7 +1301,6 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     }
     if(state.schoolCmpView && schoolCmp.length){
       wrap.appendChild(renderSchoolCompare());
-      return wrap;
     }
     const list=schoolFiltered();
     wrap.appendChild(el("div","school-count",`共 <b>${list.length}</b> 所院校符合条件（总计 ${SCHOOLS.length} 所）`));
@@ -1327,31 +1355,102 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     return box;
   }
   function renderSchoolCompare(){
-    const box=el("div","cmp-wrap");
-    box.appendChild(el("div","cmp-title","📊 院校并排对比（最多 3 所）"));
     const schools=schoolCmp.map(n=>SCHOOLS.find(x=>x.name===n)).filter(Boolean);
+    const cols=schools.length||1;
     const fields=[
-      ["层次", s=>s.tier],
-      ["省份", s=>s.province],
-      ["是否考408", s=>s.exam==="408"?"考408":"自命题"],
-      ["26复试线(院线区间)", s=>(s.lineMin&&s.lineMax)?(s.lineMin===s.lineMax?String(s.lineMax):`${s.lineMin}-${s.lineMax}`):"-"],
-      ["统考录取合计", s=>s.admit?`${s.admit} 人`:"-"],
-      ["专业数", s=>(s.programs||[]).length],
+      ["层次", s=>s.tier||"-"],
+      ["地区", s=>s.province||"-"],
+      ["专业课", s=>s.exam==="408"?"408":"自命题"],
+      ["26复试线", s=>(s.lineMin&&s.lineMax)?(s.lineMin===s.lineMax?String(s.lineMax):`${s.lineMin}-${s.lineMax}`):"-"],
+      ["统考招生", s=>s.admit?`${s.admit} 人`:"-"],
+      ["专业数", s=>(s.programs||[]).length+" 个"],
       ["备注", s=>s.note||"-"],
       ["补充信息", s=>s.extra||"-"]
     ];
-    const grid=el("div","cmp-grid");
-    grid.appendChild(el("div","cmp-row cmp-head",
-      `<span class="cmp-metric">指标</span>`+schools.map(s=>`<span class="cmp-sname">${esc(s.name)}</span>`).join("")));
-    fields.forEach(([label,fn])=>{
-      grid.appendChild(el("div","cmp-row",
-        `<span class="cmp-metric">${esc(label)}</span>`+schools.map(s=>`<span class="cmp-val">${esc(String(fn(s)))}</span>`).join("")));
+    const backdrop=el("div","cmp-modal-backdrop");
+    const modal=el("div","cmp-modal");
+    modal.innerHTML=
+      `<div class="cmp-modal-head"><h3>院校对比</h3><button class="cmp-modal-close">✕</button></div>`+
+      `<div class="cmp-modal-body">`+
+        `<div class="cmp-grid" id="cmpGrid"></div>`+
+        `<div class="cmp-detail-panels" id="cmpDetailPanels"></div>`+
+      `</div>`+
+      `<div class="cmp-modal-foot"><button class="btn cmp-back">← 返回卡片列表</button></div>`;
+    const grid=modal.querySelector("#cmpGrid");
+    grid.style.setProperty("--cmp-cols", cols);
+    grid.innerHTML=
+      `<div class="cmp-row cmp-head">`+
+        `<span class="cmp-metric">项目</span>`+
+        schools.map(s=>`<span class="cmp-sname">${esc(s.name)}</span>`).join("")+
+      `</div>`+
+      fields.map(([label,fn])=>
+        `<div class="cmp-row">`+
+          `<span class="cmp-metric">${esc(label)}</span>`+
+          schools.map(s=>`<span class="cmp-val">${esc(String(fn(s)))}</span>`).join("")+
+        `</div>`
+      ).join("")+
+      `<div class="cmp-row cmp-actions">`+
+        `<span class="cmp-metric"></span>`+
+        schools.map(s=>`<span class="cmp-val"><button class="btn cmp-detail-btn" data-n="${esc(s.name)}">展开详情</button></span>`).join("")+
+      `</div>`;
+    const panels=modal.querySelector("#cmpDetailPanels");
+    schools.forEach(s=>{
+      const panel=el("div","cmp-detail-panel");
+      panel.dataset.n=s.name;
+      const progs=s.programs||[];
+      let html=`<h4>${esc(s.name)} · 全部专业/方向</h4>`;
+      if(!progs.length){
+        html+=`<div class="cmp-detail-empty">暂无学院 / 专业级明细</div>`;
+      } else {
+        html+=`<div class="cmp-detail-table">`+
+          `<div class="cmp-detail-row cmp-detail-th"><span>学院</span><span>专业</span><span>方向</span><span>学位</span><span>专业课</span><span>26线</span><span>录取</span><span>均分</span><span>报录比</span><span>类型</span></div>`+
+          progs.map(p=>{
+            const deg=parseDegree(p.major);
+            const lt=p.line26?p.line26:"-";
+            const at=p.admit!=null?String(p.admit):"-";
+            const avg=p.avg!=null?String(p.avg):"-";
+            const ra=p.ratio?p.ratio:"-";
+            const tp=p.type||"-";
+            const tpCls=tp.includes("调剂")?"tp-adj":(tp.includes("一志愿")?"tp-first":"tp-na");
+            return `<div class="cmp-detail-row">`+
+              `<span>${esc(p.college||"-")}</span>`+
+              `<span>${esc(p.major||"-")}</span>`+
+              `<span>${esc(p.dir||"-")}</span>`+
+              `<span>${esc(deg)}</span>`+
+              `<span>${esc(p.exam||"-")}</span>`+
+              `<span>${esc(lt)}</span>`+
+              `<span>${esc(at)}</span>`+
+              `<span>${esc(avg)}</span>`+
+              `<span>${esc(ra)}</span>`+
+              `<span class="${tpCls}">${esc(tp)}</span>`+
+            `</div>`;
+          }).join("")+
+        `</div>`;
+      }
+      if(s.extra){
+        const lines=String(s.extra).split(/[；;]/).map(x=>x.trim()).filter(Boolean);
+        html+=`<div class="sc-extra" style="margin-top:10px"><span class="k">补充信息</span><div class="sc-extra-lines">`+
+          lines.map(l=>`<div>• ${esc(l)}</div>`).join("")+`</div></div>`;
+      }
+      panel.innerHTML=html;
+      panels.appendChild(panel);
     });
-    box.appendChild(grid);
-    const back=el("button","btn cmp-back","← 返回卡片列表");
-    back.onclick=()=>{ state.schoolCmpView=false; renderMain(); };
-    box.appendChild(back);
-    return box;
+    modal.querySelector(".cmp-modal-close").onclick=()=>{ state.schoolCmpView=false; renderMain(); };
+    modal.querySelector(".cmp-back").onclick=()=>{ state.schoolCmpView=false; renderMain(); };
+    modal.querySelectorAll(".cmp-detail-btn").forEach(btn=>{
+      btn.onclick=()=>{
+        const n=btn.dataset.n;
+        const panel=[...panels.querySelectorAll(".cmp-detail-panel")].find(p=>p.dataset.n===n);
+        if(!panel) return;
+        const show=!panel.classList.contains("show");
+        panel.classList.toggle("show", show);
+        btn.classList.toggle("open", show);
+        btn.textContent=show?"收起详情":"展开详情";
+      };
+    });
+    backdrop.appendChild(modal);
+    backdrop.onclick=(e)=>{ if(e.target===backdrop){ state.schoolCmpView=false; renderMain(); } };
+    return backdrop;
   }
 
   // ---------- BROWSE ----------
