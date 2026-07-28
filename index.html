@@ -720,13 +720,16 @@
   /* 按学院分组（可折叠，宽松排版） */
   .sd-groups{display:flex;flex-direction:column}
   .sd-group{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;background:var(--surface-2,#fff)}
-  .sd-group-head{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--surface-light,#f8fafc);cursor:pointer;user-select:none;transition:background .15s}
-  .sd-group-head:hover{background:var(--surface,#eef2f7)}
-  .sd-group-name{font-size:14.5px;font-weight:800;color:var(--text);flex:0 0 auto}
-  .sd-group-meta{font-size:12.5px;color:var(--text-2);flex:1 1 auto}
-  .sd-group-arrow{font-size:12px;color:var(--text-3);transition:transform .2s;flex:0 0 auto;transform:rotate(0deg)}
-  .sd-group.open .sd-group-arrow{transform:rotate(90deg)}
-  .sd-group-body{display:none;padding:12px 14px}
+  .sd-group-head{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface-light,#f8fafc);cursor:pointer;user-select:none;transition:background .15s}
+  .sd-group-head:hover{background:#eef2f7}
+  .sd-group-name{font-size:15px;font-weight:800;color:var(--text);flex:0 0 auto}
+  .sd-group-meta{font-size:12.5px;color:var(--text-2);flex:1 1 auto;margin-left:8px}
+  .sd-expand-btn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:6px 13px;cursor:pointer;transition:all .15s}
+  .sd-group-head:hover .sd-expand-btn{background:#dbeafe;border-color:#93c5fd}
+  .sd-group.open .sd-expand-btn{color:#b45309;background:#fff7ed;border-color:#fed7aa}
+  .sd-expand-btn .chev{font-size:10px;transition:transform .2s}
+  .sd-group.open .sd-expand-btn .chev{transform:rotate(180deg)}
+  .sd-group-body{display:none;padding:14px 16px;background:#fff}
   .sd-group.open .sd-group-body{display:block}
   .cmp-back{font-size:13px;padding:8px 16px;cursor:pointer;border-radius:9px;border:1px solid var(--border);background:var(--surface-2,#fff);color:var(--text)}
   /* 改考年份标签（26改考紫 / 27改考橙 / 25改考蓝，呼应 Excel 配色规范） */
@@ -1527,8 +1530,12 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
         `</div>`;
       };
       const headRow=`<div class="sd-row sd-th"><span>专业</span><span>方向</span><span>学位</span><span>专业课</span><span>公共课</span><span>26线</span><span>录取</span><span>均分</span><span>报录比</span><span>类型</span></div>`;
-      let gi=0;
-      rows=`<div class="sd-groups">`+[...groups.entries()].map(([col,ps])=>{
+      const order=[...groups.entries()].sort((a,b)=>{
+        const sa=a[1].reduce((t,p)=>t+(p.admit||0),0);
+        const sb=b[1].reduce((t,p)=>t+(p.admit||0),0);
+        return sb-sa;
+      });
+      rows=`<div class="sd-groups">`+order.map(([col,ps])=>{
         // 同学院内按专业合并方向（同一专业首行显示专业名，后续行以“—”延续）
         const majorGroups=new Map();
         ps.forEach(p=>{
@@ -1539,9 +1546,6 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
         const sorted=ps.slice().sort((a,b)=>(b.admit||0)-(a.admit||0));
         const admitSum=sorted.reduce((t,p)=>t+(p.admit||0),0);
         const groupChange=uniqChange(ps);
-        const open=gi===0?"open":"";
-        const arrow=gi===0?"▾":"▸";
-        gi++;
         const majorHtml=[...majorGroups.entries()].map(([m,mps])=>{
           const mSorted=mps.slice().sort((a,b)=>(b.admit||0)-(a.admit||0));
           const mAdmit=mSorted.reduce((t,p)=>t+(p.admit||0),0);
@@ -1553,10 +1557,10 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
             `<div class="sd-table">`+headRow+mSorted.map(p=>rowHtml(p, fi++===0)).join("")+`</div>`+
           `</div>`;
         }).join("");
-        return `<div class="sd-group ${open}">`+
+        return `<div class="sd-group">`+
           `<div class="sd-group-head"><span class="sd-group-name">${esc(col)}</span>${changeTag(groupChange)}`+
           `<span class="sd-group-meta">${sorted.length} 个专业 · 统考录取合计 ${admitSum} 人</span>`+
-          `<span class="sd-group-arrow">${arrow}</span></div>`+
+          `<span class="sd-expand-btn" data-n="${sorted.length}">展开 ${sorted.length} 个专业 <span class="chev">▾</span></span></div>`+
           `<div class="sd-group-body">`+majorHtml+`</div>`+
         `</div>`;
       }).join("")+`</div>`;
@@ -1579,7 +1583,11 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
       h.onclick=()=>{
         const g=h.parentElement;
         const open=g.classList.toggle("open");
-        h.querySelector(".sd-group-arrow").textContent=open?"▾":"▸";
+        const btn=h.querySelector(".sd-expand-btn");
+        if(btn){
+          const n=btn.getAttribute("data-n")||"";
+          btn.innerHTML=(open?"收起 <span class=\"chev\">▴</span>":"展开 "+n+" 个专业 <span class=\"chev\">▾</span>");
+        }
       };
     });
     backdrop.appendChild(modal);
