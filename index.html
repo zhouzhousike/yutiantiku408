@@ -1266,7 +1266,8 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
       const sel=el("select","sel");
       const lectLabel = l => (state.subject==="all" && LECT_SUBJ[l])
         ? `【${SUBJ_KEY_TO_NAME[LECT_SUBJ[l]]}】${l}` : l;
-      sel.innerHTML=`<option value="all">全部章节</option>`+lects.map(l=>`<option value="${esc(l)}" ${state.lecture===l?"selected":""}>${esc(lectLabel(l))}</option>`).join("");
+      const firstOpt = state.module==="real" ? "全部年份" : "全部章节";
+      sel.innerHTML=`<option value="all">${firstOpt}</option>`+lects.map(l=>`<option value="${esc(l)}" ${state.lecture===l?"selected":""}>${esc(lectLabel(l))}</option>`).join("");
       sel.onchange=()=>{ state.lecture=sel.value; if(state.view==="practice"){ startPractice(); } renderMain(); };
       c.appendChild(sel);
     }
