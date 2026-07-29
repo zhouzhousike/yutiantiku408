@@ -1375,6 +1375,13 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
         if(!degs.has(schoolFilter.degree)) return false;
       }
       return true;
+    }).sort((a,b)=>{
+      // 按"普遍的学校影响力"分块：985 > 211 > 双非 > 研究所(计算所)
+      const TIER_RANK={"985":0,"211":1,"双非":2,"研究所":3};
+      const ra=TIER_RANK[a.tier]!=null?TIER_RANK[a.tier]:9;
+      const rb=TIER_RANK[b.tier]!=null?TIER_RANK[b.tier]:9;
+      if(ra!==rb) return ra-rb;
+      return SCHOOLS.indexOf(a)-SCHOOLS.indexOf(b); // 同档内保持原相对顺序
     });
   }
   function renderSchoolControls(c){
@@ -1386,7 +1393,7 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
     };
     const provs=[...new Set(SCHOOLS.map(s=>s.province).filter(Boolean))].sort();
     c.appendChild(mkSel("全部省份","province",provs.map(p=>[p,p])));
-    c.appendChild(mkSel("全部层次","tier",[["985","985"],["211","211"],["研究所","研究所"],["双非","双非"]]));
+    c.appendChild(mkSel("全部层次","tier",[["985","985"],["211","211"],["双非","双非"],["研究所","研究所"]]));
     c.appendChild(mkSel("专业课","exam",[["408","408"],["自命题","自命题"]]));
     c.appendChild(mkSel("全部类型","type",[["first","仅一志愿"],["adj","含调剂"]]));
     c.appendChild(mkSel("全部学位","degree",[["专硕","专硕"],["学硕","学硕"]]));
