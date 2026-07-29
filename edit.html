@@ -648,6 +648,13 @@
   .sc-actions .btn{flex:1;font-size:12.5px;padding:7px 6px;cursor:pointer;border-radius:9px;border:1px solid var(--border);background:var(--surface-2,#fff);color:var(--text);transition:.15s}
   .sc-actions .btn:hover{border-color:var(--accent);color:var(--accent)}
   .sc-actions .cmp-on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .sc-sub{font-size:12.5px;color:var(--text-3);margin:5px 0 0}
+  .sc-agg{background:var(--surface-light,#f3f4f6);border-radius:10px;padding:10px 12px;margin-top:10px}
+  .sc-agg-main{font-size:14px;font-weight:700;color:var(--text)}
+  .sc-agg-sub{font-size:12.5px;color:var(--text-2);margin-top:4px}
+  .sc-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .sc-chip{font-size:12px;background:var(--surface-light,#eee);color:var(--text-2);padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .sc-chip.more{background:transparent;border:1px dashed var(--border);color:var(--text-3)}
   .sc-detail{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
   .sc-extra{font-size:12.5px;color:var(--text-2);line-height:1.7;margin-bottom:10px}
   .sc-extra .k{display:inline-block;font-weight:700;color:var(--accent);margin-right:8px}
@@ -1344,6 +1351,29 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     const pool = matched.length ? matched : progs;
     return pool.slice().sort((a,b)=> (b.admit||0)-(a.admit||0))[0];
   }
+  // 院校卡片「聚合摘要」：按当前 学位/专业课 筛选口径，从 program 级聚合学院的考情概览。
+  // 用于方案 A 卡片——替代"单一代表项"，避免一所学校多个学院都考 408 时只显示其中一个学院。
+  function schoolAgg(s){
+    const progs=s.programs||[];
+    const dd=schoolFilter.degree, ex=schoolFilter.exam;
+    const matched=progs.filter(p=>
+      (dd==="all" || parseDegree(p.major)===dd) &&
+      (ex==="all" || (p.exam||"")===ex)
+    );
+    const pool = matched.length ? matched : progs;
+    // 学院：按数据原始顺序去重
+    const colleges=[];
+    pool.forEach(p=>{ const c=p.college; if(c && !colleges.includes(c)) colleges.push(c); });
+    const majorDirs=pool.length;                        // 每个 program 行 = 一个专业方向
+    const admitSum=pool.reduce((a,p)=> a + (Number(p.admit)||0), 0);
+    const eightCount=pool.filter(p=>(p.exam||"")==="408").length;
+    // chips：学院按录取合计降序取前 4，超出显示 +N
+    const byCollege={};
+    pool.forEach(p=>{ const c=p.college||"其他"; byCollege[c]=(byCollege[c]||0)+(Number(p.admit)||0); });
+    const top=Object.keys(byCollege).sort((a,b)=> byCollege[b]-byCollege[a]).slice(0,4);
+    const more=Math.max(0, colleges.length-4);
+    return {colleges, majorDirs, admitSum, eightCount, top, more};
+  }
   function lineText(p){
     if(!p) return "-";
     if(p.line26) return String(p.line26);
@@ -1451,32 +1481,19 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
       const card=el("div","school-card");
       const tierCls = s.tier==="985"?"t985":s.tier==="211"?"t211":s.tier==="研究所"?"tins":s.tier==="双非"?"tother":"tother";
       const examCls = s.exam==="408"?"e408":"eself";
-      const p=repProgram(s);
-      const deg=p?parseDegree(p.major):"-";
-      const engTxt=(s.engs&&s.engs.length)?s.engs.join("/"):(p&&p.eng?p.eng:"");
-      const mathTxt=(s.maths&&s.maths.length)?s.maths.join("/"):(p&&p.math?p.math:"");
-      const pub=[engTxt,mathTxt].filter(Boolean).join("/")||"-";
-      const examTxt=p?(p.exam||"-"):(s.exam==="408"?"408":"自命题");
-      const line=lineText(p);
-      const avg=p&&p.avg!=null?String(p.avg):"-";
-      const admit=p&&p.admit!=null?String(p.admit):"-";
-      const ratio=p&&p.ratio?p.ratio:"-";
+      const agg=schoolAgg(s);
       const inCmp = schoolInCmp(s.name);
+      const chipsHtml = agg.top.map(c=>`<span class="sc-chip">${esc(c)}</span>`).join("")
+        + (agg.more>0?`<span class="sc-chip more">+${agg.more}</span>`:"");
       card.innerHTML=
         `<div class="sc-head"><h3 class="sc-name">${esc(s.name)}</h3><span class="s-badge ${tierCls}">${esc(s.tier)}</span></div>`+
-        `<div class="sc-info">`+
-          `<div><span class="sc-label">地区</span><span class="sc-val">${esc(s.province||"-")}</span></div>`+
-          `<div><span class="sc-label">学院</span><span class="sc-val">${esc(p&&p.college?p.college:"-")}</span></div>`+
-          `<div><span class="sc-label">专业</span><span class="sc-val">${esc(p&&p.major?p.major:"-")}</span></div>`+
-          `<div><span class="sc-label">学位</span><span class="sc-val">${esc(deg)}</span></div>`+
-          `<div><span class="sc-label">数学/英语</span><span class="sc-val">${esc(pub)}</span></div>`+
-          `<div><span class="sc-label">专业课</span><span class="sc-val ${p&&(p.exam==="408"?"sd-408":"sd-self")}">${esc(examTxt)}</span></div>`+
-          `<div><span class="sc-label">复试线</span><span class="sc-val">${esc(line)}</span></div>`+
-          `<div><span class="sc-label">录取均分</span><span class="sc-val">${esc(avg)}</span></div>`+
-          `<div><span class="sc-label">统考招生</span><span class="sc-val">${esc(admit)}</span></div>`+
-          `<div><span class="sc-label">报录比</span><span class="sc-val">${esc(ratio)}</span></div>`+
-          (s.note?`<div class="sc-note-line"><span class="sc-label">备注</span><span class="sc-val">${esc(s.note)}</span></div>`:"")+
+        `<div class="sc-sub">${esc(s.province||"-")}</div>`+
+        `<div class="sc-agg">`+
+          `<div class="sc-agg-main">${agg.colleges.length} 个学院 · ${agg.majorDirs} 个方向</div>`+
+          `<div class="sc-agg-sub">录取合计 ${agg.admitSum} 人 · 其中 ${agg.eightCount} 个考 408</div>`+
         `</div>`+
+        (agg.colleges.length?`<div class="sc-chips">${chipsHtml}</div>`:"")+
+        (s.note?`<div class="sc-note-line"><span class="sc-label">备注</span><span class="sc-val">${esc(s.note)}</span></div>`:"")+
         `<div class="sc-actions"><button class="btn sc-view">查看完整信息</button><button class="btn ${inCmp?"cmp-on":""}" data-cmp="${esc(s.name)}">${inCmp?"✓ 已加对比":"＋ 对比"}</button></div>`;
       card.querySelector(".sc-name").onclick=(e)=>{ e.stopPropagation(); openSchoolDetail(s); };
       card.querySelector(".sc-view").onclick=(e)=>{ e.stopPropagation(); openSchoolDetail(s); };
