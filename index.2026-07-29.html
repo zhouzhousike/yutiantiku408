@@ -989,6 +989,8 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
       last = m.index + run.length;
     }
     out += sups(esc(text.slice(last)));
+    // 机器字/数制表示：[X]补、[-X]补 中的"补"字显示为右下标
+    out = out.replace(/\[([^\]]+)\]补/g, '[$1]<sub>补</sub>');
     return out;
   };
   const isFav = id=>fav.has(id);
