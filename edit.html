@@ -1334,7 +1334,15 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
   function repProgram(s){
     const progs=s.programs||[];
     if(!progs.length) return null;
-    return progs.slice().sort((a,b)=> (b.admit||0)-(a.admit||0))[0];
+    // 代表项需"贴合当前筛选"：优先在符合 学位/专业课 筛选的 program 中选录取人数最多者，
+    // 避免"选了学硕却展示专硕""选了408却展示自命题"。筛选无匹配时退回全部 program，保证卡片不空白。
+    const dd=schoolFilter.degree, ex=schoolFilter.exam;
+    const matched=progs.filter(p=>
+      (dd==="all" || parseDegree(p.major)===dd) &&
+      (ex==="all" || (p.exam||"")===ex)
+    );
+    const pool = matched.length ? matched : progs;
+    return pool.slice().sort((a,b)=> (b.admit||0)-(a.admit||0))[0];
   }
   function lineText(p){
     if(!p) return "-";
@@ -1355,7 +1363,12 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
     return SCHOOLS.filter(s=>{
       if(schoolFilter.province!=="all" && s.province!==schoolFilter.province) return false;
       if(schoolFilter.tier!=="all" && s.tier!==schoolFilter.tier) return false;
-      if(schoolFilter.exam!=="all" && s.exam!==schoolFilter.exam) return false;
+      if(schoolFilter.exam!=="all"){
+        // 专业课过滤改为 program 级：学校"含任一匹配 exam 的专业"即算命中，
+        // 与卡片代表项、详情弹窗的过滤口径一致（避免混合院校漏筛/错筛）。
+        const exs=new Set((s.programs||[]).map(p=>p.exam).filter(Boolean));
+        if(!exs.has(schoolFilter.exam)) return false;
+      }
       if(!schoolMatchesType(s)) return false;
       if(schoolFilter.line!=="all"){
         const v=Number(s.lineMax)||0;
@@ -1376,7 +1389,9 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
       }
       return true;
     }).sort((a,b)=>{
-      // 按"普遍的学校影响力"分块：985 > 211 > 双非 > 研究所(计算所)
+      // 院校排序：按"普遍的学校影响力"分块，与 parse_schools.py 的 tier_order 保持一致。
+      // 顺序：985(0) > 211(1) > 双非(2) > 研究所/计算所(3)；"双非"为预留档（当前源数据暂无独立双非层）。
+      // 未识别 tier 记 9 排末尾；同档内保持 SCHOOLS 原相对顺序（稳定、不随录取人数抖动）。
       const TIER_RANK={"985":0,"211":1,"双非":2,"研究所":3};
       const ra=TIER_RANK[a.tier]!=null?TIER_RANK[a.tier]:9;
       const rb=TIER_RANK[b.tier]!=null?TIER_RANK[b.tier]:9;
@@ -1543,10 +1558,13 @@ window.EDIT_ENABLED = true;   // true=维护版(可编辑) / false=只读版(发
       const y=String(c).replace(/改考/,"");
       return `<span class="sd-tag cy-${y}">${esc(c)}</span>`;
     }).join("") : "";
-    let progs=(s.programs||[]);
-    if(schoolFilter.degree!=="all"){
-      progs=progs.filter(p=>parseDegree(p.major)===schoolFilter.degree);
-    }
+    // 详情弹窗同样按 学位 + 专业课 双重筛选，与列表/卡片口径一致：
+    // 选"学硕"只列学硕专业，选"408"只列考408的专业（混合院校不再混入自命题）。
+    let progs=(s.programs||[]).filter(p=>{
+      if(schoolFilter.degree!=="all" && parseDegree(p.major)!==schoolFilter.degree) return false;
+      if(schoolFilter.exam!=="all" && (p.exam||"")!==schoolFilter.exam) return false;
+      return true;
+    });
     let rows;
     if(!progs.length){
       rows=`<div class="sd-empty">暂无学院 / 专业级明细</div>`;
