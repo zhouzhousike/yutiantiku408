@@ -15,7 +15,9 @@
       "C": "树",
       "D": "图"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -37,7 +39,9 @@
       "C": "3",
       "D": "4"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -59,7 +63,9 @@
       "C": "RLN",
       "D": "RNL"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -76,7 +82,9 @@
     "date": null,
     "stem": "下列二叉排序树中，满足平衡二叉树定义的是______（因篇幅问题不显示图片，详情可在右下角领取\"汇总电子版\"查看）",
     "options": {},
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -98,7 +106,9 @@
       "C": "111",
       "D": "119"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -120,7 +130,9 @@
       "C": "I和Ⅲ",
       "D": "I、Ⅱ和Ⅲ"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -142,7 +154,9 @@
       "C": "仅I和II",
       "D": "仅I和III"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -164,7 +178,9 @@
       "C": "各结点内关键字均升序或降序排列",
       "D": "叶结点之间通过指针链接"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -186,7 +202,9 @@
       "C": "3，8，12，5，20，15，22，28，19",
       "D": "3，12，5，8，28，20，15，22，19"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -208,7 +226,9 @@
       "C": "选择排序",
       "D": "二路归并排序"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -230,7 +250,9 @@
       "C": "指令周期的不同阶段",
       "D": "指令和数据所在的存储单元"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -252,7 +274,9 @@
       "C": "x=0000007FH，y=FFF7H，z=FFFF0076H",
       "D": "x=0000007FH，y=FFF7H，z=00000076H"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -274,7 +298,9 @@
       "C": "01000 0010001",
       "D": "发生溢出"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -296,7 +322,9 @@
       "C": "4",
       "D": "6"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -318,7 +346,9 @@
       "C": "1、30",
       "D": "2、30"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -340,7 +370,9 @@
       "C": "2008H",
       "D": "2009H"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -362,7 +394,9 @@
       "C": "RISC的内部通用寄存器数量相对CISC多",
       "D": "RISC的指令数、寻址方式和指令格式种类相对CISC少"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -384,7 +418,9 @@
       "C": "70ns",
       "D": "60ns"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -406,7 +442,9 @@
       "C": "指令执行速度快，指令功能的修改和扩展容易",
       "D": "指令执行速度快，指令功能的修改和扩展难"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -428,7 +466,9 @@
       "C": "40MB/s",
       "D": "80MB/s"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -450,7 +490,9 @@
       "C": "50%",
       "D": "95%"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -472,7 +514,9 @@
       "C": "浮点运算下溢",
       "D": "访存缺页"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -494,7 +538,9 @@
       "C": "I、III、IV",
       "D": "II、III、IV"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -516,7 +562,9 @@
       "C": "先来先服务调度算法",
       "D": "高响应比优先调度算法"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -538,7 +586,9 @@
       "C": "4",
       "D": "5"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -560,7 +610,9 @@
       "C": "数据保护",
       "D": "栈保护"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -582,7 +634,9 @@
       "C": "224 B",
       "D": "232 B"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -604,7 +658,9 @@
       "C": "链式结构且磁盘块定长",
       "D": "链式结构且磁盘块变长"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -626,7 +682,9 @@
       "C": "110，170，180，195，12，35，45，68",
       "D": "12，35，45，68，110，170，180，195"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -648,7 +706,9 @@
       "C": "用户口令表",
       "D": "系统注册表"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -670,7 +730,9 @@
       "C": "1、2",
       "D": "2、1"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -692,7 +754,9 @@
       "C": "主设备号",
       "D": "从设备号"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -714,7 +778,9 @@
       "C": "会话层",
       "D": "应用层"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -736,7 +802,9 @@
       "C": "48 kbps",
       "D": "96 kbps"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -758,7 +826,9 @@
       "C": "4",
       "D": "5"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -780,7 +850,9 @@
       "C": "源物理地址",
       "D": "源 IP 地址"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -802,7 +874,9 @@
       "C": "减少160m",
       "D": "减少80m"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -824,7 +898,9 @@
       "C": "800",
       "D": "1000"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -846,7 +922,9 @@
       "C": "9 KB",
       "D": "16 KB"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -868,7 +946,9 @@
       "C": "建立在UDP之上的控制连接",
       "D": "建立在UDP之上的数据连接"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -890,7 +970,9 @@
       "C": "b c a e f d",
       "D": "a f e d c b"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -912,7 +994,9 @@
       "C": "d b c a e",
       "D": "e c b a d"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -929,7 +1013,9 @@
     "date": null,
     "stem": "下列线索二叉树中（用虚线表示线索），符合后序线索树定义的是______（因篇幅问题不显示图片，详情可在右下角领取\"汇总电子版\"查看）",
     "options": {},
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -951,7 +1037,9 @@
       "C": "24，53",
       "D": "24，90"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -973,7 +1061,9 @@
       "C": "113",
       "D": "122"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -995,7 +1085,9 @@
       "C": "树中两个权值最小的结点一定是兄弟结点。",
       "D": "树中任一非叶结点的权值一定不小于下一层任一结点的权值。"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1017,7 +1109,9 @@
       "C": "16",
       "D": "21"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1039,7 +1133,9 @@
       "C": "2",
       "D": "1"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1061,7 +1157,9 @@
       "C": "6",
       "D": "7"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1083,7 +1181,9 @@
       "C": "每次划分后，先处理较短的分区可以减少递归次数。",
       "D": "递归次数与每次划分后得到的分区的处理顺序无关。"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1105,7 +1205,9 @@
       "C": "归并排序",
       "D": "基数排序"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1127,7 +1229,9 @@
       "C": "仅 II、III",
       "D": "I、II、III"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1149,7 +1253,9 @@
       "C": "r1 × r4",
       "D": "r2 × r4"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1171,7 +1277,9 @@
       "C": "仅II、III",
       "D": "仅III、IV"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1193,7 +1301,9 @@
       "C": "0700H",
       "D": "0800H"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1215,7 +1325,9 @@
       "C": "仅I、II、IV",
       "D": "仅II、III、IV"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1237,7 +1349,9 @@
       "C": "TLB命中，Cache未命中，Page命中",
       "D": "TLB命中，Cache命中，Page未命中"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1259,7 +1373,9 @@
       "C": "存储器数据寄存器(MDR)",
       "D": "指令寄存器(IR)"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1281,7 +1397,9 @@
       "C": "条件转移",
       "D": "资源冲突"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1301,7 +1419,9 @@
       "A": "CPI、VES",
       "B": "IS"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1323,7 +1443,9 @@
       "C": "III→IV→V→VI→VII",
       "D": "IV→I→V→VI→VII"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1345,7 +1467,9 @@
       "C": "1958Mbps",
       "D": "7834Mbps"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1367,7 +1491,9 @@
       "C": "库函数",
       "D": "原语"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1389,7 +1515,9 @@
       "C": "仅I、III",
       "D": "I、II和III"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1409,7 +1537,9 @@
       "A": "0、1",
       "B": "1、0"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1431,7 +1561,9 @@
       "C": "进程长期处于就绪队列中",
       "D": "进程从就绪态转为运行态"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1453,7 +1585,9 @@
       "C": "能保证进程互斥进入临界区，会出现“饥饿”现象",
       "D": "能保证进程互斥进入临界区，不会出现“饥饿”现象"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1475,7 +1609,9 @@
       "C": "10MB",
       "D": "15MB"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1497,7 +1633,9 @@
       "C": "256",
       "D": "512"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1519,7 +1657,9 @@
       "C": "1057 KB",
       "D": "16513 KB"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1541,7 +1681,9 @@
       "C": "加快文件的检索速度",
       "D": "加快文件的读/写速度"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1563,7 +1705,9 @@
       "C": "系统调用服务程序",
       "D": "用户登录程序"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1585,7 +1729,9 @@
       "C": "协议的内部实现细节",
       "D": "每一层必须完成的功能"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1607,7 +1753,9 @@
       "C": "80.16 ms",
       "D": "80.24 ms"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1629,7 +1777,9 @@
       "C": "R1可以经过R2到达 net1，跳数为17",
       "D": "R1不能经过R2到达 net1"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1651,7 +1801,9 @@
       "C": "源点抑制",
       "D": "超时"
     },
-    "answer": [],
+    "answer": [
+      "C"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1673,7 +1825,9 @@
       "C": "仅 I、II、IV",
       "D": "I、II、III、IV"
     },
-    "answer": [],
+    "answer": [
+      "B"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1695,7 +1849,9 @@
       "C": "仅III和IV",
       "D": "仅IV"
     },
-    "answer": [],
+    "answer": [
+      "D"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1717,7 +1873,9 @@
       "C": "3000",
       "D": "4000"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
@@ -1739,7 +1897,9 @@
       "C": "多条、一条",
       "D": "多条、多条"
     },
-    "answer": [],
+    "answer": [
+      "A"
+    ],
     "analysis": "",
     "kps": [],
     "video": "",
