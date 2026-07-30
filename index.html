@@ -117,7 +117,7 @@
   .m-br{display:none}
   :root[data-theme="light"] .hero p{color:#2A3B4A;opacity:.95;font-weight:500}
   .foot-tagline{font-size:15px;font-style:italic;color:var(--accent-hi);opacity:.9;letter-spacing:.6px;margin-bottom:12px;font-family:'瑞云写刻','RuiYunXieKe','KaiTi','STKaiti',serif}
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;justify-items:stretch;margin-top:30px;max-width:780px;margin-left:auto;margin-right:auto}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px;justify-items:stretch;margin-top:30px;max-width:900px;margin-left:auto;margin-right:auto}
   .stat{background:var(--surface-2);border:1px solid var(--border);border-radius:16px;padding:16px 18px;min-width:0;text-align:center;position:relative}
   .stat .n{font-size:clamp(26px,3.5vw,32px);font-weight:800;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums}
   .stat .l{font-size:12.5px;color:var(--text-3);margin-top:7px;letter-spacing:.5px}
@@ -1394,6 +1394,7 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
   function renderStats(){
     const dCount = Q.filter(q=>q.source==="daily").length;
     const bCount = Q.filter(q=>q.source==="bank500").length;
+    const rCount = Q.filter(q=>q.source==="real").length;
     const doneCount = Object.keys(prog).length;
     const okCount = Object.values(prog).filter(v=>v==="ok").length;
     const rate = doneCount? Math.round(okCount/doneCount*100):0;
@@ -1401,6 +1402,7 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
       ["题库总量", Q.length, "bank", "全部题库 · 点击进入刷题"],
       ["每日一题", dCount, "daily", "每日一题 · 点击进入刷题"],
       ["基础必刷", bCount, "bank", "基础必刷500题 · 点击进入刷题"],
+      ["真题", rCount, "real", "历年真题选择题 · 点击进入刷题"],
       ["已练习", doneCount, "done", "已练习 · 点击查看"],
       ["错题", wrong.size, "wrong", "错题区 · 点击进入刷题"]
     ];
