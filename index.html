@@ -776,6 +776,40 @@
   /* 同专业延续行：弱化上边框，视觉上归属同一专业 */
   .sd-row.cont{margin-top:-1px}
 
+  /* ===== 账号 / 云同步 UI ===== */
+  .icon-btn.user-on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+  .auth-card{padding:30px 28px;max-width:420px}
+  .auth-card h3{font-size:20px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .auth-card input{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:12px 14px;border-radius:11px;
+    border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);margin-bottom:12px}
+  .auth-card input:focus{outline:none;border-color:var(--accent-hi);box-shadow:0 0 0 4px var(--accent-soft)}
+  .auth-err{color:var(--wrong);font-size:13px;min-height:18px;margin-bottom:8px}
+  .auth-hint{font-size:12.5px;color:var(--text-3);margin-top:14px;line-height:1.65}
+  .acc-email{font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;word-break:break-all}
+  .lc-status{font-size:12.5px;font-weight:700;margin-bottom:16px}
+  .lc-status.ok{color:var(--correct)} .lc-status.bad{color:var(--wrong)} .lc-status.syncing{color:var(--accent)}
+  .btn.wechat{background:#07C160;color:#fff;border-color:#07C160;width:100%;margin-top:4px}
+  .btn.wechat:disabled{opacity:.6;cursor:not-allowed}
+  .school-card{max-width:580px;padding:26px 26px}
+  .school-card h3{font-size:20px;font-weight:800;margin-bottom:4px}
+  .school-sub{font-size:12.5px;color:var(--text-3);margin-bottom:16px;line-height:1.6}
+  .school-add{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+  .school-add input,.school-add select{font:inherit;font-size:13px;padding:9px 11px;border-radius:10px;
+    border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text)}
+  .school-add input.sname{flex:1;min-width:120px}
+  .school-add input.sscore{width:84px}
+  .school-list{display:flex;flex-direction:column;gap:10px}
+  .school-item{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:11px 13px}
+  .school-item .si-name{font-weight:700;color:var(--text);min-width:90px}
+  .school-item .si-meta{font-size:12.5px;color:var(--text-2);flex:1;line-height:1.5}
+  .school-item .si-del{cursor:pointer;color:var(--text-3);border:none;background:none;font-size:18px;flex:none}
+  .school-item .si-del:hover{color:var(--wrong)}
+  .school-item .si-status{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;flex:none}
+  .si-status.s-preparing{background:rgba(59,111,143,.14);color:var(--accent)}
+  .si-status.s-accept{background:rgba(46,158,91,.16);color:#2e9e5b}
+  .si-status.s-giveup{background:rgba(180,35,24,.12);color:var(--wrong)}
+  .school-empty{text-align:center;color:var(--text-3);font-size:13px;padding:22px}
+
 </style>
 </head>
 <body>
@@ -800,6 +834,7 @@
       <button class="icon-btn fav-btn" id="favBtn" title="我的收藏">★<span class="fav-count" id="favCount">0</span></button>
       <button class="icon-btn" id="themeBtn" title="切换深/浅色">🌙</button>
       <button class="icon-btn" id="editBtn" title="编辑题目（维护模式）">✎</button>
+      <button class="icon-btn" id="userBtn" title="登录 / 我的账号" style="display:none">👤</button>
     </div>
   </header>
 
@@ -845,6 +880,11 @@
   </footer>
 
   <button class="back-to-top" id="backToTop" title="回到顶部">↑</button>
+
+  <!-- 账号：登录 / 注册 / 我的 -->
+  <div class="modal" id="userModal"><div class="modal-card auth-card" id="userCard"></div></div>
+  <!-- 我的择校清单 -->
+  <div class="modal" id="schoolModal"><div class="modal-card school-card" id="schoolCard"></div></div>
 
   <div class="modal" id="modal"><div class="modal-card" id="modalCard"></div></div>
 
@@ -957,7 +997,7 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
     pos:"yt408_pos"            // module -> 该模块上次刷题停在的题号(索引)，用于"接着刷"
   };
   const read = (k,def)=>{ try{const v=localStorage.getItem(k);return v==null?def:JSON.parse(v);}catch(e){return def;} };
-  const write = (k,v)=>{ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} };
+  const write = (k,v)=>{ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} if(LC_ENABLED && CloudSync && CloudSync.loggedIn && CloudSync.loggedIn()) CloudSync.schedulePush(); };
 
   let fav = new Set(read(LS.fav,[]));
   let prog = read(LS.prog,{}); // id -> 'ok' | 'no'
@@ -982,6 +1022,200 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
     wrongCelebrated:false,  // 错题区：本场是否已达全部答对（避免重复弹恭喜）
     schoolCmpView:false     // 择校：是否进入并排对比视图
   };
+
+  // ================= 云端账号 & 同步（LeanCloud 国内版 · REST 直连 · 免 SDK） =================
+  // 未填 APP_ID/APP_KEY/API_BASE 时，整段功能自动休眠，UI 不出现，行为与现网完全一致。
+  const LC_CONFIG = {
+    APP_ID:  "",            // ← LeanCloud 国内版 AppID（控制台获取）
+    APP_KEY: "",            // ← AppKey
+    API_BASE:"",            // ← API 域名，如 https://xxxx.api.lncldapi.com（控制台「设置→应用凭证」）
+    WECHAT_APPID:""         // ← 微信开放平台网站应用 AppID（填了才显示微信按钮；真正生效还需后端换码，暂说明）
+  };
+  const LC_ENABLED = !!(LC_CONFIG.APP_ID && LC_CONFIG.APP_KEY && LC_CONFIG.API_BASE);
+  const LC_SESSION_KEY = "yt408_lc_session";
+  // 随账号同步的本地键（学习数据 + 主题 + 视图 + 择校）
+  const SYNCED_KEYS = ["yt408_fav","yt408_prog","yt408_wrong","yt408_done_from","yt408_pos",
+                       "yt_daily_done_v1","yt_daily_subj_celebrated_v1","yt408_theme","yt408_view","yt408_school"];
+  let schoolData = read("yt408_school", {targets:[], note:""});
+
+  const CloudSync = (function(){
+    let session=null, objId=null, pushTimer=null, pushing=false;
+    function loadSession(){ try{ session=JSON.parse(localStorage.getItem(LC_SESSION_KEY)||"null"); }catch(e){ session=null; }
+      if(session&&session.objectId&&session.sessionToken) return true; session=null; return false; }
+    function saveSession(s){ session=s; try{ s?localStorage.setItem(LC_SESSION_KEY,JSON.stringify(s)):localStorage.removeItem(LC_SESSION_KEY); }catch(e){} }
+    const loggedIn=()=>!!(session&&session.sessionToken);
+    function headers(){ const h={"X-LC-Id":LC_CONFIG.APP_ID,"X-LC-Key":LC_CONFIG.APP_KEY,"Content-Type":"application/json"};
+      if(session&&session.sessionToken) h["X-LC-Session"]=session.sessionToken; return h; }
+    async function req(method,path,body){
+      if(!LC_ENABLED) return null;
+      const url=LC_CONFIG.API_BASE.replace(/\/$/,"")+"/1.1"+path;
+      const opt={method,headers:headers(),credentials:"omit"};
+      if(body!==undefined) opt.body=JSON.stringify(body);
+      const res=await fetch(url,opt); const text=await res.text(); let data=null;
+      try{ data=text?JSON.parse(text):null; }catch(e){}
+      if(!res.ok){ const msg=(data&&(data.error||data.message))?(data.error||data.message):("HTTP "+res.status); throw new Error(msg); }
+      return data;
+    }
+    async function signUp(email,password){
+      const data=await req("POST","/users",{username:email,email,password});
+      const s={objectId:data.objectId,sessionToken:data.sessionToken,username:email,email};
+      saveSession(s); objId=null; return s;
+    }
+    async function logIn(email,password){
+      const data=await req("POST","/login",{username:email,password});
+      const s={objectId:data.objectId,sessionToken:data.sessionToken,username:data.username||email,email:data.email||email};
+      saveSession(s); objId=null; return s;
+    }
+    async function logOut(){ try{ await req("POST","/logout"); }catch(e){} saveSession(null); objId=null; }
+    function aclFor(uid){ return {"*":{read:false,write:false},[uid]:{read:true,write:true}}; }
+    function snapshot(){ const snap={}; SYNCED_KEYS.forEach(k=>{ try{ snap[k]=JSON.parse(localStorage.getItem(k)); }catch(e){ snap[k]=null; } }); return snap; }
+    async function findOrCreate(){
+      if(objId) return objId;
+      const where=encodeURIComponent(JSON.stringify({owner:{"__type":"Pointer",className:"_User",objectId:session.objectId}}));
+      const r=await req("GET","/classes/StudyData?where="+where+"&limit=1");
+      if(r&&r.results&&r.results.length){ objId=r.results[0].objectId; return objId; }
+      const c=await req("POST","/classes/StudyData",{owner:{"__type":"Pointer",className:"_User",objectId:session.objectId},payload:snapshot(),ACL:aclFor(session.objectId)});
+      objId=c.objectId; return objId;
+    }
+    function markSynced(ok,msg){ const el=$("#lcStatus"); if(el){ el.textContent=ok?"☁ 已同步云端":("⚠ 同步失败："+(msg||"")); el.className="lc-status "+(ok?"ok":"bad"); } }
+    function markSyncing(){ const el=$("#lcStatus"); if(el){ el.textContent="☁ 同步中…"; el.className="lc-status syncing"; } }
+    async function push(){ if(!loggedIn()) return; markSyncing(); pushing=true;
+      try{ const id=await findOrCreate(); await req("PUT","/classes/StudyData/"+id,{payload:snapshot(),ACL:aclFor(session.objectId)}); markSynced(true); }
+      catch(e){ markSynced(false,e&&e.message); } finally{ pushing=false; } }
+    function schedulePush(){ if(!LC_ENABLED||!loggedIn()) return; if(pushTimer) clearTimeout(pushTimer); pushTimer=setTimeout(()=>{ push(); },700); }
+    async function pull(){ if(!loggedIn()) return null;
+      try{ const id=await findOrCreate(); const r=await req("GET","/classes/StudyData/"+id); return (r&&r.payload)?r.payload:null; }
+      catch(e){ return null; } }
+    function applySnapshot(snap){ if(!snap) return;
+      SYNCED_KEYS.forEach(k=>{ if(k in snap&&snap[k]!==undefined){ try{ localStorage.setItem(k,JSON.stringify(snap[k])); }catch(e){} } });
+      fav=new Set(read("yt408_fav",[])); prog=read("yt408_prog",{}); wrong=new Set(read("yt408_wrong",[]));
+      doneFrom=read("yt408_done_from",{}); pos=read("yt408_pos",{});
+      schoolData=read("yt408_school",{targets:[],note:""});
+      applyTheme(read("yt408_theme","light")); state.view=read("yt408_view","browse");
+    }
+    return {loadSession,saveSession,loggedIn,signUp,logIn,logOut,snapshot,push,schedulePush,pull,applySnapshot,markSynced,getSession:()=>session};
+  })();
+
+  // ---------- 账号 / 择校 UI ----------
+  function showUserBtn(){ const b=$("#userBtn"); if(b) b.style.display = LC_ENABLED ? "grid" : "none"; }
+  function closeUserModal(){ const m=$("#userModal"); if(m) m.classList.remove("show"); }
+  function openAuthModal(mode){
+    mode=mode||"login";
+    const c=$("#userCard");
+    const wechatBtn = LC_CONFIG.WECHAT_APPID
+      ? `<button class="btn wechat" id="authWechat" disabled title="微信登录需配套后端换取 code，暂未开放">💬 微信扫码登录（即将开放）</button>`
+      : "";
+    c.innerHTML=`<button class="modal-close" id="userClose">✕</button>
+      <h3>👤 登录 / 注册</h3>
+      <div class="seg" id="authSeg" style="margin-bottom:14px">
+        <button data-m="login" class="${mode==='login'?'on':''}">登录</button>
+        <button data-m="signup" class="${mode==='signup'?'on':''}">注册</button>
+      </div>
+      <input id="authEmail" type="email" placeholder="邮箱（用作账号）" value="">
+      <input id="authPwd" type="password" placeholder="密码（6 位以上）" value="">
+      <div class="auth-err" id="authErr"></div>
+      <button class="btn primary" id="authSubmit" style="width:100%">${mode==='login'?'登录':'注册并登录'}</button>
+      ${wechatBtn}
+      <div class="auth-hint">登录后，你的错题 / 收藏 / 答题进度会随账号云端保存，换设备也能接着刷。<br>未联网时照常刷题，联网后自动同步。</div>`;
+    $("#userModal").classList.add("show");
+    $("#userClose").onclick=closeUserModal;
+    $("#authSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>openAuthModal(b.dataset.m));
+    $("#authSubmit").onclick=async()=>{
+      const email=$("#authEmail").value.trim(), pwd=$("#authPwd").value;
+      const err=$("#authErr"); err.textContent="";
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ err.textContent="请输入有效邮箱"; return; }
+      if(pwd.length<6){ err.textContent="密码至少 6 位"; return; }
+      $("#authSubmit").textContent="处理中…"; $("#authSubmit").disabled=true;
+      try{
+        if(mode==="signup") await CloudSync.signUp(email,pwd); else await CloudSync.logIn(email,pwd);
+        await CloudSync.push();                 // 把本地已有进度上传
+        afterLogin();
+        closeUserModal();
+      }catch(e){ err.textContent=(e&&e.message)||"操作失败，请重试"; }
+      finally{ const s=$("#authSubmit"); if(s){ s.textContent=mode==='login'?'登录':'注册并登录'; s.disabled=false; } }
+    };
+  }
+  function openAccountModal(){
+    const s=CloudSync.getSession()||{};
+    const c=$("#userCard");
+    c.innerHTML=`<button class="modal-close" id="userClose">✕</button>
+      <h3>👤 我的账号</h3>
+      <div class="acc-email">${esc(s.email||s.username||"")}</div>
+      <div class="lc-status ok" id="lcStatus">☁ 已同步云端</div>
+      <button class="btn" id="accSchool" style="width:100%;margin-bottom:10px">🎯 我的择校清单</button>
+      <button class="btn ghost" id="accLogout" style="width:100%">退出登录</button>
+      <div class="auth-hint">本地数据随你的账号保存；换设备登录即可恢复全部进度。</div>`;
+    $("#userModal").classList.add("show");
+    $("#userClose").onclick=closeUserModal;
+    $("#accSchool").onclick=()=>{ closeUserModal(); openSchoolModal(); };
+    $("#accLogout").onclick=async()=>{ await CloudSync.logOut(); showUserBtn(); renderStats(); renderControls(); renderMain(); closeUserModal(); };
+  }
+  function afterLogin(){ showUserBtn(); const b=$("#userBtn"); if(b){ b.classList.add("user-on"); b.textContent="👤"; }
+    renderStats(); renderControls(); renderMain(); }
+
+  function openSchoolModal(){
+    const c=$("#schoolCard");
+    c.innerHTML=`<button class="modal-close" id="schoolClose">✕</button>
+      <h3>🎯 我的择校清单</h3>
+      <div class="school-sub">记录你的目标院校与分数规划，随账号云端保存，换设备不丢。</div>
+      <div class="school-add">
+        <input class="sname" id="scName" placeholder="院校名称，如 清华大学">
+        <input class="sscore" id="scScore" placeholder="目标总分" inputmode="numeric">
+        <select id="scStatus">
+          <option value="preparing">备考中</option>
+          <option value="accept">已上岸</option>
+          <option value="giveup">已放弃</option>
+        </select>
+        <button class="btn primary" id="scAdd">＋ 添加</button>
+      </div>
+      <div class="school-list" id="scList"></div>`;
+    $("#schoolModal").classList.add("show");
+    $("#schoolClose").onclick=()=>$("#schoolModal").classList.remove("show");
+    $("#scAdd").onclick=()=>{
+      const name=$("#scName").value.trim(), score=$("#scScore").value.trim(), status=$("#scStatus").value;
+      if(!name){ alert("请填写院校名称"); return; }
+      schoolData.targets.push({name,score,status,note:"",updated:Date.now()});
+      saveSchool(); renderSchoolList(); $("#scName").value=""; $("#scScore").value="";
+    };
+    renderSchoolList();
+  }
+  function renderSchoolList(){
+    const list=$("#scList"); if(!list) return;
+    const stMap={preparing:["备考中","s-preparing"],accept:["已上岸","s-accept"],giveup:["已放弃","s-giveup"]};
+    if(!schoolData.targets.length){ list.innerHTML='<div class="school-empty">还没有添加目标院校，上面填一下试试～</div>'; return; }
+    list.innerHTML=schoolData.targets.map((t,i)=>{
+      const st=stMap[t.status]||stMap.preparing;
+      const meta=(t.score?("目标 "+esc(t.score)+" 分"):"未设目标分")+(t.note?(" · "+esc(t.note)):"");
+      return `<div class="school-item">
+        <span class="si-name">${esc(t.name)}</span>
+        <span class="si-meta">${meta}</span>
+        <span class="si-status ${st[1]}">${st[0]}</span>
+        <button class="si-del" data-i="${i}" title="删除">✕</button>
+      </div>`;
+    }).join("");
+    list.querySelectorAll(".si-del").forEach(b=>b.onclick=()=>{
+      schoolData.targets.splice(parseInt(b.dataset.i,10),1); saveSchool(); renderSchoolList();
+    });
+  }
+  function saveSchool(){ write("yt408_school", schoolData); }
+
+  function initAccount(){
+    showUserBtn();
+    if(!LC_ENABLED) return;
+    if(CloudSync.loadSession()){
+      const b=$("#userBtn"); if(b){ b.classList.add("user-on"); }
+      // 异步拉取云端数据并合并（不阻塞首屏）
+      (async()=>{
+        const snap=await CloudSync.pull();
+        if(snap){ CloudSync.applySnapshot(snap); renderStats(); renderControls(); renderMain(); }
+      })();
+    }
+  }
+  // 联网/关页时把最新本地数据推上去
+  if(LC_ENABLED){
+    document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") CloudSync.push(); });
+    window.addEventListener("beforeunload",()=>{ CloudSync.push(); });
+  }
 
   // ---------- helpers ----------
   const $ = (s,r=document)=>r.querySelector(s);
@@ -2452,6 +2686,14 @@ window.EDIT_ENABLED = false;   // true=维护版(可编辑) / false=只读版(�
   }
 
   // ---------- init ----------
+  // 账号 / 云同步入口
+  const userBtn=$("#userBtn");
+  if(userBtn) userBtn.onclick=()=>{ if(CloudSync.loggedIn()) openAccountModal(); else openAuthModal("login"); };
+  // 关闭账号/择校弹层（点遮罩）
+  const userModal=$("#userModal"); if(userModal) userModal.onclick=(e)=>{ if(e.target===userModal) closeUserModal(); };
+  const schoolModal=$("#schoolModal"); if(schoolModal) schoolModal.onclick=(e)=>{ if(e.target===schoolModal) schoolModal.classList.remove("show"); };
+  initAccount();
+
   syncWrapModule();
   renderStats();
   renderControls();
