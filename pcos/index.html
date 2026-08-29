@@ -391,7 +391,7 @@ function ma7(arr){var out=arr.map(function(_,i){if(i<6)return null;var s=0,c=0;f
 
 /* ============ 视图渲染 ============ */
 var VIEW='dashboard';
-var UI={dashRange:'7',dailyDate:null,gutRange:'30',weekEnd:null,exportStart:null,exportEnd:null,calMonth:null,quickDate:null,expRange:'7',trendTab:'weight',viewStack:['dashboard']};
+var UI={dashRange:'7',dailyDate:null,gutRange:'30',weekEnd:null,exportStart:null,exportEnd:null,calMonth:null,quickDate:null,expRange:'7',trendTab:'weight',viewStack:['dashboard'],more:{},opt:{}};
 
 function tabOf(v){if(v==='dashboard')return 'dashboard';if(v==='trends')return 'trends';if(v==='weekly')return 'weekly';if(v==='mine'||v==='period'||v==='meds'||v==='export'||v==='settings'||v==='experiments'||v==='fooddb'||v==='training'||v==='mealplan')return 'mine';return 'dashboard';}
 
@@ -680,7 +680,19 @@ function addCycleIfNew(d){
 /* ============ 每日记录（完整） ============ */
 /* 字段类型：num/text/time/sel = 常规；score = 0-10 评分（默认未记录，可清除）；tri = 三态布尔（未记录/否/是）
    注意：医学与行为布尔字段一律用 tri，绝不用 checkbox（避免未记录被保存成 false）。
-   月经出血不在 SECTIONS 中：periodLog 是唯一出血数据源，由专用 period 控件直接读写。 */
+   月经出血不在 SECTIONS 中：periodLog 是唯一出血数据源，由专用 period 控件直接读写。
+   每日记录采用「核心 + 按需展开」：core 始终显示；cond 满足时显示；opt 经「＋补充」展开；more 经「展开详细记录」展开。
+   隐藏字段绝不自动写 false/0/null，仅在用户触摸后写回（readDailyForm 控制）。 */
+/* --- 条件显示辅助 --- */
+function milkExpActive(date){var d=date||UI.dailyDate;if(!state.experiments)return false;return state.experiments.some(function(e){return e.metrics&&e.metrics.indexOf('milkNormalMl')>=0&&daysBetween(e.start,d)>=0&&daysBetween(d,e.end)>=0;});}
+function condMet(key,d,date){if(key==='bowelTrue')return d.bowel===true;if(key==='bowelFalse')return d.bowel===false;if(key==='bingeYes')return d.bingeEpisode===true;if(key==='abnormalYes')return d.giAbnormal===true;if(key==='painInSymptoms')return (d.giSymptoms||[]).indexOf('腹痛')>=0;if(key==='lactuloseYes')return d.lactuloseTaken===true;if(key==='bloatHigh')return isNum(d.bloat)&&Number(d.bloat)>=5;if(key==='milkExp')return milkExpActive(date);return false;}
+function moreKey(sec){return UI.dailyDate+'|'+sec;}
+function optKey(name){return UI.dailyDate+'|'+name;}
+function toggleMore(sec){UI.more[moreKey(sec)]=!UI.more[moreKey(sec)];render();}
+function toggleOpt(name){UI.opt[optKey(name)]=!UI.opt[optKey(name)];render();}
+function toggleTag(btn){var box=btn.parentNode;box.setAttribute('data-touched','1');btn.classList.toggle('on');}
+function toggleSeg(btn){var box=btn.parentNode;box.setAttribute('data-touched','1');Array.prototype.forEach.call(box.children,function(c){if(c!==btn)c.classList.remove('on');});btn.classList.toggle('on');}
+function weekObsKey(end){return addDays(end,-6);}
 var SECTIONS=[
  {t:'体重与围度',f:[
    {k:'weight',l:'晨起空腹体重',u:'kg',ty:'num'},
@@ -689,24 +701,21 @@ var SECTIONS=[
    {k:'hip',l:'臀围',u:'cm',ty:'num'},
    {k:'afterPoop',l:'晨起排便后测量',ty:'tri'}
  ]},
- {t:'饮食行为',f:[
-   {k:'skipLunch',l:'今日跳过午餐',ty:'tri'},
-   {k:'takeoutCount',l:'外卖次数',u:'次',ty:'num'},
-   {k:'coffeeCups',l:'咖啡杯数',u:'杯',ty:'num'},
-   {k:'dairy',l:'奶制品摄入',ty:'sel',o:['无','少量','正常','较多']},
-   {k:'waterMl',l:'饮水量',u:'ml',ty:'num'},
-   {k:'highSaltTakeout',l:'吃了高盐外卖',ty:'tri'},
-   {k:'spicy',l:'明显辛辣',ty:'tri'},
-   {k:'soyHeavy',l:'较多豆制品',ty:'tri'}
+ {t:'饮食补充',f:[
+   {k:'waterMl',l:'饮水量',u:'ml',ty:'num',core:true},
+   {k:'coffeeCups',l:'咖啡',u:'杯',ty:'seg',opts:[0,1,2],optLabels:['0','1','2+'],core:true},
+   {k:'specialDiet',l:'特殊饮食因素',ty:'tags',opts:['高盐','明显辛辣','较多豆制品'],opt:'diet',optLabel:'记录特殊饮食因素'}
  ]},
- {t:'饥饿与嘴馋',f:[
-   {k:'hunger',l:'整体饥饿程度',u:'/10',ty:'score'},
-   {k:'craving',l:'嘴馋程度',u:'/10',ty:'score'},
-   {k:'eatWhenNotHungry',l:'不饿但特别想吃东西',ty:'tri'},
-   {k:'cantStopSnacking',l:'开始吃零食后难停下',ty:'tri'},
-   {k:'ateWhenFull',l:'已饱仍控制不住继续吃',ty:'tri'},
-   {k:'episodeTime',l:'失控发生时间',u:'如 21:30',ty:'text'},
-   {k:'episodeMood',l:'当时情绪',ty:'sel',o:['正常','无聊','压力大','焦虑','低落','经前','其他']}
+ {t:'饥饿与食欲',f:[
+   {k:'hunger',l:'今天整体饥饿',u:'/10',ty:'score',core:true},
+   {k:'craving',l:'今天嘴馋程度',u:'/10',ty:'score',core:true},
+   {k:'bingeEpisode',l:'吃起来很难停下',ty:'tri',core:true},
+   {k:'episodeTime',l:'大约发生在什么时候',ty:'text',cond:'bingeYes'},
+   {k:'episodeTypes',l:'更接近哪种情况',ty:'tags',opts:['不饿但特别想吃','开始吃零食后很难停','已饱仍继续吃'],cond:'bingeYes'},
+   {k:'episodeMood',l:'当时状态',ty:'sel',o:['正常','无聊','压力大','焦虑','低落','经前','其他'],cond:'bingeYes'},
+   {k:'eatWhenNotHungry',l:'不饿但特别想吃东西',ty:'tri',more:true},
+   {k:'cantStopSnacking',l:'开始吃零食后难停下',ty:'tri',more:true},
+   {k:'ateWhenFull',l:'已饱仍控制不住继续吃',ty:'tri',more:true}
  ]},
  {t:'运动',f:[
    {k:'steps',l:'手机步数',u:'步',ty:'num'},
@@ -729,30 +738,34 @@ var SECTIONS=[
    {k:'fatigue',l:'疲惫程度',u:'/10',ty:'score'}
  ]},
  {t:'肠胃',f:[
-   {k:'bowel',l:'今日排便',ty:'tri'},
-   {k:'bowelCount',l:'排便次数',u:'次',ty:'num'},
-   {k:'bristol',l:'Bristol分型',ty:'sel',o:['未记录','1型 硬球','2型 块状','3型 裂条','4型 光滑','5型 软块','6型 糊状','7型 水样']},
-   {k:'difficultBowel',l:'排便困难',ty:'tri'},
-   {k:'strainBowel',l:'明显用力',ty:'tri'},
-   {k:'incompleteBowel',l:'排不干净感',ty:'tri'},
-   {k:'bloat',l:'腹胀程度',u:'/10',ty:'score'},
-   {k:'bloatTime',l:'腹胀主要时间',ty:'sel',o:['无','早晨','午后','晚上','全天']},
-   {k:'morningFlatter',l:'早晨比晚上平',ty:'tri'},
-   {k:'bloatRelief',l:'排便后腹胀减轻',ty:'tri'},
-   {k:'gas',l:'排气频率',ty:'sel',o:['正常','稍多','明显增多','非常多']},
-   {k:'abdominalPain',l:'腹痛',ty:'tri'},
-   {k:'painLoc',l:'腹痛位置',ty:'text'},
-   {k:'nausea',l:'恶心',ty:'tri'},
-   {k:'diarrhea',l:'腹泻',ty:'tri'},
-   {k:'lactuloseTaken',l:'服用乳果糖',ty:'tri'},
-   {k:'lactuloseTime',l:'服用时间',ty:'text'},
-   {k:'lactuloseDose',l:'剂量',u:'ml',ty:'num'},
-   {k:'lactuloseBloatWorse',l:'服后腹胀加重',ty:'tri'},
-   {k:'lactuloseGasMore',l:'服后排气增多',ty:'tri'},
-   {k:'lactuloseBmHours',l:'服后多久排便',u:'h',ty:'num'},
-   {k:'milkNormalMl',l:'普通牛奶摄入',u:'ml',ty:'num'},
-   {k:'milkLactoseFree',l:'换无乳糖牛奶',ty:'tri'},
-   {k:'milkBloat2to6h',l:'牛奶后2-6h明显胀气',ty:'tri'}
+   {k:'bowel',l:'今日排便',ty:'tri',core:true},
+   {k:'bloat',l:'今日腹胀',u:'/10',ty:'score',core:true},
+   {k:'giAbnormal',l:'明显肠胃异常',ty:'tri',core:true},
+   {k:'lactuloseTaken',l:'今天使用乳果糖',ty:'tri',core:true},
+   {k:'bristol',l:'Bristol分型',ty:'bristol',cond:'bowelTrue'},
+   {k:'bowelIssues',l:'排便不太顺',ty:'tags',opts:['排便困难','明显用力','排不净感'],cond:'bowelTrue',opt:'bowelIssue',optLabel:'排便不太顺？'},
+   {k:'bloatTime',l:'腹胀主要时间',ty:'sel',o:['无','早晨','午后','晚上','全天'],cond:'bloatHigh',opt:'bloatDetail',optLabel:'补充腹胀情况'},
+   {k:'bloatRelief',l:'排便或排气后腹胀减轻',ty:'tri',cond:'bloatHigh',opt:'bloatDetail'},
+   {k:'morningFlatter',l:'早晨比晚上平',ty:'tri',more:true},
+   {k:'giSymptoms',l:'异常表现',ty:'tags',opts:['排气明显增多','腹痛','恶心','腹泻','其他'],cond:'abnormalYes'},
+   {k:'painLoc',l:'腹痛位置',ty:'text',cond:'painInSymptoms'},
+   {k:'abdominalPain',l:'腹痛',ty:'tri',more:true},
+   {k:'nausea',l:'恶心',ty:'tri',more:true},
+   {k:'diarrhea',l:'腹泻',ty:'tri',more:true},
+   {k:'gas',l:'排气频率',ty:'sel',o:['正常','稍多','明显增多','非常多'],more:true},
+   {k:'bowelCount',l:'排便次数',u:'次',ty:'num',more:true},
+   {k:'difficultBowel',l:'排便困难',ty:'tri',more:true},
+   {k:'strainBowel',l:'明显用力',ty:'tri',more:true},
+   {k:'incompleteBowel',l:'排不净感',ty:'tri',more:true},
+   {k:'lactuloseDose',l:'剂量',u:'ml',ty:'num',cond:'lactuloseYes'},
+   {k:'lactuloseEffects',l:'使用后反应',ty:'tags',opts:['帮助排便','腹胀增加','排气增加','腹泻','没明显感觉'],cond:'lactuloseYes'},
+   {k:'lactuloseTime',l:'服用时间',ty:'text',more:true},
+   {k:'lactuloseBmHours',l:'服后多久排便',u:'h',ty:'num',more:true},
+   {k:'lactuloseBloatWorse',l:'服后腹胀加重',ty:'tri',more:true},
+   {k:'lactuloseGasMore',l:'服后排气增多',ty:'tri',more:true},
+   {k:'milkNormalMl',l:'普通牛奶摄入',u:'ml',ty:'num',cond:'milkExp'},
+   {k:'milkLactoseFree',l:'换无乳糖牛奶',ty:'tri',cond:'milkExp'},
+   {k:'milkBloat2to6h',l:'牛奶后2-6h明显胀气',ty:'tri',cond:'milkExp'}
  ]}
 ];
 var MEALS=[['breakfast','早餐'],['lunch','午餐'],['snack1','下午加餐'],['dinner','晚餐'],['snack2','夜间加餐']];
@@ -760,6 +773,18 @@ var TAKEOUT_TYPES=['麻辣烫','麻辣香锅','螺蛳粉','中餐','面食','快
 
 function fieldHTML(f,d){
   var v=d[f.k];
+  if(f.ty==='tags'){
+    var arr=(v&&Array.isArray(v))?v:[];
+    var btns=f.opts.map(function(o){return '<button type="button" class="mbtn'+(arr.indexOf(o)>=0?' on':'')+'" data-v="'+o+'" onclick="toggleTag(this)">'+o+'</button>';}).join('');
+    return '<div class="fld" style="grid-column:1/-1"><b>'+f.l+'</b><div class="tagpick" data-k="'+f.k+'" data-ty="tags" data-touched="0">'+btns+'</div></div>';
+  }
+  if(f.ty==='seg'||f.ty==='bristol'){
+    var cur=(v==null||v==='')?null:Number(v);
+    var sbtns='';
+    if(f.ty==='seg'){ sbtns=f.opts.map(function(o,i){var lbl=f.optLabels?f.optLabels[i]:String(o);return '<button type="button" class="mbtn'+(cur===o?' on':'')+'" data-v="'+o+'" onclick="toggleSeg(this)">'+lbl+'</button>';}).join(''); }
+    else { for(var bi=1;bi<=7;bi++){ sbtns+='<button type="button" class="mbtn'+(cur===bi?' on':'')+'" data-v="'+bi+'" onclick="toggleSeg(this)">'+bi+'</button>'; } }
+    return '<div class="fld" style="grid-column:1/-1"><b>'+f.l+(f.u?' '+f.u:'')+'</b><div class="seg" data-k="'+f.k+'" data-ty="'+f.ty+'" data-touched="0" style="margin-top:4px">'+sbtns+'</div></div>';
+  }
   if(f.ty==='tri'){ // 三态：'' = 未记录，'0' = 否，'1' = 是；保存时映射为 null/false/true
     var sel='<select data-k="'+f.k+'"><option value="">未记录</option><option value="0" '+(v===false?'selected':'')+'>否</option><option value="1" '+(v===true?'selected':'')+'>是</option></select>';
     return '<label class="fld"><b>'+f.l+'</b>'+sel+'</label>';
@@ -777,9 +802,33 @@ function fieldHTML(f,d){
   if(f.ty==='text')return '<label class="fld"><b>'+f.l+'</b><input type="text" data-k="'+f.k+'" value="'+esc(v||'')+'"></label>';
   return '<label class="fld"><b>'+f.l+(f.u?' ('+f.u+')':'')+'</b><input type="number" step="0.1" data-k="'+f.k+'" value="'+(v==null?'':v)+'"></label>';
 }
+function sectionHTML(s,d){
+  function vis(f){ if(f.more||f.opt)return false; if(f.cond)return condMet(f.cond,d); return true; }
+  var html=s.f.filter(vis).map(function(f){return fieldHTML(f,d);}).join('');
+  var optNames=[];
+  s.f.forEach(function(f){ if(f.opt&&optNames.indexOf(f.opt)<0)optNames.push(f.opt); });
+  optNames.forEach(function(name){
+    var fields=s.f.filter(function(f){return f.opt===name;});
+    var condOk=true; if(fields[0].cond)condOk=condMet(fields[0].cond,d);
+    if(!condOk)return;
+    var open=!!UI.opt[optKey(name)];
+    var label=fields[0].optLabel||'补充记录';
+    html+='<div style="grid-column:1/-1;margin-top:4px"><button type="button" class="btn ghost sm" onclick="toggleOpt(\''+name+'\')">'+(open?'－ 收起':'＋ '+label)+'</button>';
+    if(open)html+=fields.map(function(f){return fieldHTML(f,d);}).join('');
+    html+='</div>';
+  });
+  var moreF=s.f.filter(function(f){return f.more;});
+  if(moreF.length){
+    var mo=!!UI.more[moreKey(s.t)];
+    html+='<div style="grid-column:1/-1;margin-top:6px"><button type="button" class="btn ghost sm" onclick="toggleMore(\''+s.t+'\')">'+(mo?'－ 收起详细记录':'展开详细记录')+'</button>';
+    if(mo)html+='<div style="margin-top:8px">'+moreF.map(function(f){return fieldHTML(f,d);}).join('')+'</div>';
+    html+='</div>';
+  }
+  return '<div class="card"><h2 style="margin-top:0">'+s.t+'</h2><div class="grid g3">'+html+'</div></div>';
+}
 function dailyView(){
   var d=getDay(UI.dailyDate);
-  var secs=SECTIONS.map(function(s){return '<div class="card"><h2 style="margin-top:0">'+s.t+'</h2><div class="grid g3">'+s.f.map(function(f){return fieldHTML(f,d);}).join('')+'</div></div>';}).join('');
+  var secs=SECTIONS.map(function(s){return sectionHTML(s,d);}).join('');
   // 月经专用控件：periodLog 是唯一每日出血数据源（不再经过 days[date].period 镜像）
   var pd=state.periodLog[UI.dailyDate]||'';
   var isDay1=!!(state.cycleStarts&&state.cycleStarts[UI.dailyDate]);
@@ -792,7 +841,7 @@ function dailyView(){
   var nut=dietProgress(d);
   var takeout=takeoutHTML(d.takeoutList||[]);
   var cal='<div class="card"><h2 style="margin-top:0">记录日历</h2>'+miniCalendar()+'</div>';
-  return '<h1>每日记录</h1><div class="sub">所有字段均可补录与修改 · 建议 2-3 分钟完成</div>'+
+  return '<h1>每日记录</h1><div class="sub">核心约 60–90 秒填完 · 异常时自动展开追问，更多字段在「展开详细记录」</div>'+
     '<div class="card"><div class="row" style="justify-content:space-between"><div class="row"><label class="fld"><b>记录日期</b><input type="date" id="dailyDate" value="'+UI.dailyDate+'"></label><button class="btn sm" id="newDay">新建/载入</button></div><button class="btn" id="saveDay">保存今日记录</button></div></div>'+
     cal+
     nut+
@@ -877,6 +926,9 @@ function addItemRow(key){var box=$('.meal-rows[data-meal="'+key+'"]');if(box)box
 function readDailyForm(){
   var d=state.days[UI.dailyDate]||{};
   $all('#main [data-k]').forEach(function(el){var k=el.getAttribute('data-k');
+    var ty=el.getAttribute('data-ty');
+    if(ty==='tags'){ if(el.getAttribute('data-touched')!=='1')return; var arr=Array.prototype.map.call(el.querySelectorAll('.mbtn.on'),function(b){return b.getAttribute('data-v');}); if(arr.length)d[k]=arr; else delete d[k]; return; }
+    if(ty==='seg'||ty==='bristol'){ if(el.getAttribute('data-touched')!=='1')return; var on=el.querySelector('.mbtn.on'); if(on)d[k]=Number(on.getAttribute('data-v')); else delete d[k]; return; }
     if(el.tagName==='SELECT'&&el.getAttribute('data-k')&&el.querySelector('option[value="0"]')&&el.querySelector('option[value="1"]')&&el.options[0].value===''){ // tri 三态选择
       if(el.value==='1')d[k]=true;
       else if(el.value==='0')d[k]=false;
@@ -1045,12 +1097,17 @@ function weeklyView(){
   var m=weekMetrics(dates);
   function row(l,v){return '<tr><td>'+l+'</td><td><b>'+v+'</b></td></tr>';}
   function N(v){return (v==null||v==='')?'—':v;}
+  var wkKey=weekObsKey(end);
+  state.weekObs=state.weekObs||{};
+  var wo=state.weekObs[wkKey]||{};
+  function obsRow(label,key){var cur=wo[key]||'';var opts=[['better','改善'],['same','差不多'],['worse','加重'],['unknown','不确定']];return '<div class="row" style="margin:8px 0;justify-content:space-between;flex-wrap:wrap;gap:6px"><span>'+label+'</span><div class="seg" data-obs="'+key+'" data-wk="'+wkKey+'">'+opts.map(function(o){return '<button type="button" class="mbtn'+(cur===o[0]?' on':'')+'" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></div>';}
+  var obsBlock=obsRow('本周整体便秘比上周','constipation')+obsRow('本周腹胀比上周','bloat')+obsRow('本周食欲变化','appetite');
   var html='<h1>每周复盘</h1><div class="sub">自动生成本周客观数据 · 可选任意结束日期</div>'+
     '<div class="card"><div class="row" style="justify-content:space-between"><label class="fld"><b>结束日期</b><input type="date" id="weekEnd" value="'+end+'"></label><button class="btn sm" id="genWeek">生成</button></div>'+
     '<div class="note" style="margin-top:8px">有效记录 '+m.validDays+'/7 天'+(m.validDays<3?'：数据不足 3 天，暂不输出强趋势结论。':'')+'</div>'+
     '<div class="grid g2" style="margin-top:12px">'+
     '<div><h2 style="margin-top:0;font-size:14px">体重与围度</h2><table>'+row('本周平均体重',N(m.wAvg)+' kg')+row('上周平均体重',N(m.wPrev)+' kg')+row('两周差值',(m.wDelta!=null?(m.wDelta>0?'+':'')+N(m.wDelta):'—')+' kg')+row('本周最低/最高',N(m.wMin)+' / '+N(m.wMax)+' kg')+row('腰围变化',m.waistChg!=null?m.waistChg+' cm ('+N(m.waistPrev)+'→'+N(m.waistNow)+')':(m.waistNow!=null?N(m.waistNow)+' cm（仅本周）':'—'))+row('大腿围变化',m.thighChg!=null?m.thighChg+' cm ('+N(m.thighPrev)+'→'+N(m.thighNow)+')':(m.thighNow!=null?N(m.thighNow)+' cm（仅本周）':'—'))+'</table></div>'+
-    '<div><h2 style="margin-top:0;font-size:14px">饮食</h2><table>'+row('平均每日热量',N(m.avgKcal)+' kcal（有效 '+m.kcalN+'/7）')+row('平均蛋白质',N(m.avgPro)+' g（有效 '+m.proN+'/7）')+row('平均碳水',N(m.avgCarb)+' g（有效 '+m.carbN+'/7）')+row('平均脂肪',N(m.avgFat)+' g（有效 '+m.fatN+'/7）')+row('平均纤维',N(m.avgFiber)+' g（有效 '+m.fibN+'/7）')+row('达标蛋白天数',m.proDays+' / '+m.proDen+'（有记录天数）')+row('跳过午餐天数',m.skipLunch)+row('外卖次数',m.takeout)+'</table></div>'+
+    '<div><h2 style="margin-top:0;font-size:14px">饮食</h2><table>'+row('平均每日热量',N(m.avgKcal)+' kcal（有效 '+m.kcalN+'/7）')+row('平均蛋白质',N(m.avgPro)+' g（有效 '+m.proN+'/7）')+row('平均碳水',N(m.avgCarb)+' g（有效 '+m.carbN+'/7）')+row('平均脂肪',N(m.avgFat)+' g（有效 '+m.fatN+'/7）')+row('平均纤维',N(m.avgFiber)+' g（有效 '+m.fibN+'/7）')+row('达标蛋白天数',m.proDays+' / '+m.proDen+'（有记录天数）')+row('未记录午餐天数',m.lunchMissing)+row('外卖次数',m.takeout)+'</table></div>'+
     '<div><h2 style="margin-top:0;font-size:14px">活动</h2><table>'+row('平均每日步数',N(m.avgSteps)+(m.stepsN?'（有效 '+m.stepsN+'/7）':''))+row('总训练次数',m.plan.done)+row('力量训练次数',m.plan.strengthDays)+row('有氧分钟',m.aeroMin)+row('肩/腰/膝不适天',m.painDays)+'</table></div>'+
     '<div><h2 style="margin-top:0;font-size:14px">运动计划执行</h2><table>'+
       row('计划训练次数',m.plan.trainingDays)+row('实际完成',m.plan.done)+row('完成率',(m.plan.rate!=null?m.plan.rate+'%':'—'))+
@@ -1064,11 +1121,12 @@ function weeklyView(){
     '<div><h2 style="margin-top:0;font-size:14px">睡眠 / 食欲 / 肠胃 / 月经</h2><table>'+
       row('平均睡眠',N(m.avgSleep)+' h')+row('平均入睡时间',N(m.avgSleepTime))+row('平均疲惫',N(m.avgFatigue)+'/10')+row('平均压力',N(m.avgStress)+'/10')+
       row('平均饥饿',N(m.avgHunger)+'/10')+row('平均嘴馋',N(m.avgCraving)+'/10')+row('失控进食次数',m.binge)+
-      row('排便天数',m.bowelDays)+row('最长连续未排便',m.maxNoBowel!=null?m.maxNoBowel+' 天':'数据不足')+row('平均腹胀',N(m.avgBloat)+'/10（有效 '+m.bloatN+'/7）')+row('排气明显增多天数',m.gasDays)+row('乳果糖使用次数',m.lactulose)+
+      row('排便天数',m.bowelDays)+row('最长连续未排便',m.maxNoBowel!=null?m.maxNoBowel+' 天':'数据不足')+row('平均腹胀',N(m.avgBloat)+'/10（有效 '+m.bloatN+'/7）')+row('高腹胀(≥5)天数',m.highBloat)+row('Bristol分布',Object.keys(m.bristolDist).length?Object.keys(m.bristolDist).map(function(k){return k+'型×'+m.bristolDist[k];}).join('、'):'数据不足')+row('排气明显增多天数',m.gasDays)+row('乳果糖使用次数',m.lactulose)+
       row('当前周期第几天',N(m.cycleDay))+row('本周经期',m.inPeriod?'是':'否')+row('异常出血',m.abnormalBleed||'无')+
       '</table></div>'+
     '</div>'+
     '<div class="card"><h2 style="margin-top:0">本周数据摘要（可发 ChatGPT）</h2><div class="copy-box" id="weekText">'+chatGptText(addDays(end,-6),end)+'</div><div class="row" style="margin-top:10px"><button class="btn sm" id="copyWeek">复制本周摘要</button><button class="btn sm ghost" id="weekXlsx">下载 XLSX</button></div></div>'+
+    '<div class="card"><h2 style="margin-top:0">本周补充观察 <span class="tag">一周一次，非每日</span></h2><div class="note">以下为可选的主观感受对比，一周填一次即可，不强制，留空表示未填。</div>'+obsBlock+'</div>'+
     insightsCard(end);
   return html;
 }
@@ -1118,16 +1176,18 @@ function weekMetrics(dates){
     avgKcal:kc.mean,kcalN:kc.n,avgPro:pr.mean,proN:pr.n,avgCarb:cb.mean,carbN:cb.n,avgFat:ft.mean,fatN:ft.n,avgFiber:fb.mean,fibN:fb.n,
     proDays:count(function(d){var p=dayNutrition(getDay(d)).protein;return p!=null&&p>=state.targets.proteinMin;}),
     proDen:dates.filter(function(d){var p=dayNutrition(getDay(d)).protein;return p!=null&&p!=='';}).length, /* Item11: 分母用实际有蛋白记录的天数 */
-    skipLunch:count(function(d){return getDay(d).skipLunch;}),
-    takeout:dates.reduce(function(a,d){var x=getDay(d);return a+(x.takeoutList&&x.takeoutList.length?x.takeoutList.length:num(x.takeoutCount));},0),
+    lunchMissing:count(function(d){var x=getDay(d);return !(x.meals&&x.meals.lunch&&x.meals.lunch.length);}),
+    takeout:dates.reduce(function(a,d){var x=getDay(d);return a+(x.takeoutList&&x.takeoutList.length?x.takeoutList.length:0);},0),
     avgSteps:sA.mean!=null?Math.round(sA.mean):null,stepsN:sA.n,
     train:train,strength:strength,aeroMin:aeroMin,painDays:painDays,
     avgSleep:slA.mean,avgSleepTime:avgSleepTime,avgFatigue:faA.mean,avgStress:stA.mean,
     avgHunger:huA.mean,avgCraving:crA.mean,
-    binge:count(function(d){return getDay(d).ateWhenFull||getDay(d).cantStopSnacking;}),
+    binge:count(function(d){var x=getDay(d);return x.bingeEpisode===true||x.ateWhenFull||x.cantStopSnacking||x.eatWhenNotHungry;}),
     bowelDays:count(function(d){return getDay(d).bowel===true;}),maxNoBowel:maxNo,
     avgBloat:blA.mean,bloatN:blA.n,
-    gasDays:count(function(d){return (getDay(d).gas==='明显增多'||getDay(d).gas==='非常多');}),
+    highBloat:count(function(d){var x=getDay(d);return isNum(x.bloat)&&Number(x.bloat)>=5;}),
+    bristolDist:(function(){var c={};dates.forEach(function(d){var x=getDay(d);if(x.bristol!=null&&x.bristol!==''&&num(x.bristol)>0)c[x.bristol]=(c[x.bristol]||0)+1;});return c;})(),
+    gasDays:count(function(d){var x=getDay(d);return (x.giSymptoms&&x.giSymptoms.indexOf('排气明显增多')>=0)||x.gas==='明显增多'||x.gas==='非常多';}),
     lactulose:count(function(d){return getDay(d).lactuloseTaken;}),
     cycleDay:ci.day!=null?ci.day:null,inPeriod:dates.some(function(d){return state.periodLog[d]==='经期中';}),
     abnormalBleed:abnormal.length?abnormal.join('、'):'无',
@@ -1397,6 +1457,7 @@ function bindWeekly(){
   $('#genWeek').onclick=function(){UI.weekEnd=$('#weekEnd').value;render();};
   $('#copyWeek').onclick=function(){var t=$('#weekText').textContent;navigator.clipboard.writeText(t).then(function(){toast('已复制，可发给 ChatGPT');},function(){toast('复制失败，请手动选择');});};
   $('#weekXlsx').onclick=function(){if(typeof XLSX==='undefined'){toast('XLSX 库未加载');return;}download(xlsxRange(addDays(UI.weekEnd,-6),UI.weekEnd),'pcos_周报.xlsx');};
+  $all('[data-obs]').forEach(function(box){box.onclick=function(e){var b=e.target.closest('button');if(!b)return;var key=box.getAttribute('data-obs');var wk=box.getAttribute('data-wk');var val=b.getAttribute('data-v');state.weekObs=state.weekObs||{};if(!state.weekObs[wk])state.weekObs[wk]={};if(state.weekObs[wk][key]===val)delete state.weekObs[wk][key];else state.weekObs[wk][key]=val;save();render();};});
 }
 
 /* ============ 我的中心 ============ */
@@ -1639,7 +1700,7 @@ function chatGptText(s,e){
   lines.push('');
   lines.push('【饮食】');
   lines.push('平均每日热量 '+avgS(m.avgKcal,m.kcalN,spanDays)+' kcal；蛋白质 '+avgS(m.avgPro,m.proN,spanDays)+' g；碳水 '+avgS(m.avgCarb,m.carbN,spanDays)+' g；脂肪 '+avgS(m.avgFat,m.fatN,spanDays)+' g；纤维 '+avgS(m.avgFiber,m.fibN,spanDays)+' g。');
-  lines.push('蛋白达标 '+m.proDays+'/'+m.proDen+' 天（分母=区间内有蛋白记录的天数）；跳过午餐 '+n0(m.skipLunch)+' 天；外卖 '+n0(m.takeout)+' 次。');
+  lines.push('蛋白达标 '+m.proDays+'/'+m.proDen+' 天（分母=区间内有蛋白记录的天数）；未记录午餐 '+n0(m.lunchMissing)+' 天；外卖 '+n0(m.takeout)+' 次（按外卖记录自动统计）。');
   lines.push('');
   lines.push('【运动】');
   lines.push('平均步数 '+avgS(m.avgSteps,m.stepsN,spanDays)+' 步/天；训练 '+n0(m.train)+' 次（力量 '+n0(m.strength)+' 次，有氧 '+n0(m.aeroMin)+' 分钟）；肩/腰/膝不适 '+n0(m.painDays)+' 天。');
@@ -1651,7 +1712,7 @@ function chatGptText(s,e){
   lines.push('平均睡眠 '+fmt(m.avgSleep)+' 小时；常见入睡时间 '+fmt(m.avgSleepTime)+'；平均疲惫 '+fmt(m.avgFatigue)+'/10；平均压力 '+fmt(m.avgStress)+'/10。');
   lines.push('');
   lines.push('【肠胃】');
-  lines.push('排便 '+n0(m.bowelDays)+' 天；最长连续 '+n0(m.maxNoBowel)+' 天未排便；排气明显增多 '+n0(m.gasDays)+' 天；乳果糖使用 '+n0(m.lactulose)+' 次。');
+  lines.push('排便 '+n0(m.bowelDays)+' 天；最长连续 '+n0(m.maxNoBowel)+' 天未排便；高腹胀(≥5) '+n0(m.highBloat)+' 天；Bristol分布 '+(Object.keys(m.bristolDist).length?Object.keys(m.bristolDist).map(function(k){return k+'型×'+m.bristolDist[k];}).join('、'):'数据不足')+'；排气明显增多 '+n0(m.gasDays)+' 天；乳果糖使用 '+n0(m.lactulose)+' 次。');
   lines.push('腹胀关联（仅基于 '+s+'~'+e+' 区间本人数据）：');
   lines.push(corr);
   lines.push('');
@@ -1694,7 +1755,7 @@ function bindExport(){
 }
 function allFieldsFlat(d){
   d=d||{};var o={};
-  SECTIONS.forEach(function(s){s.f.forEach(function(f){o[f.k]= (f.ty==='chk'||f.ty==='tri')?exportBool(d[f.k]):(d[f.k]==null?'':d[f.k]);});}); /* tri 与 chk 同样导出 是/否/空 */
+  SECTIONS.forEach(function(s){s.f.forEach(function(f){ if(f.ty==='tags'){var v=d[f.k];o[f.k]=(Array.isArray(v)&&v.length)?v.join('、'):'';} else {o[f.k]= (f.ty==='chk'||f.ty==='tri')?exportBool(d[f.k]):(d[f.k]==null?'':d[f.k]);} });}); /* tri 与 chk 同样导出 是/否/空；tags 数组转中文顿号 */
   var m=dayNutrition(d);o._kcal=m.kcal;o._protein=m.protein;o._carb=m.carb;o._fat=m.fat;o._fiber=m.fiber;o._water=m.water;
   return o;
 }
@@ -1750,8 +1811,8 @@ function buildXlsx(days){
     (x.lifts||[]).forEach(function(l){ex.push([d,x.steps,exportBool(x.trained),x.trainType,x.trainMin,a('warmup'),a('strength'),a('inclineWalk'),a('elliptical'),a('stairMachine'),a('dance'),a('easyWalk'),a('mobility'),l.name,l.weight,l.sets,l.reps,l.rpe]);});
     if(!(x.lifts||[]).length)ex.push([d,x.steps,exportBool(x.trained),x.trainType,x.trainMin,a('warmup'),a('strength'),a('inclineWalk'),a('elliptical'),a('stairMachine'),a('dance'),a('easyWalk'),a('mobility'),'','','','','']);});
   sheet('Exercise',ex);
-  var gut=[['日期','排便','次数','Bristol','腹胀','腹胀时段','排气','乳果糖','普通牛奶ml','无乳糖']];
-  days.forEach(function(d){var x=getDay(d);gut.push([d,exportBool(x.bowel),x.bowelCount,x.bristol,x.bloat,x.bloatTime,x.gas,exportBool(x.lactuloseTaken),x.milkNormalMl,exportBool(x.milkLactoseFree)]);});
+  var gut=[['日期','排便','Bristol','腹胀','腹胀时段','排便后缓解','明显异常','异常表现','腹痛位置','乳果糖','剂量','服后反应','普通牛奶ml','无乳糖','排气','排便困难/用力/排不净','恶心','腹泻']];
+  days.forEach(function(d){var x=getDay(d);gut.push([d,exportBool(x.bowel),x.bristol,x.bloat,x.bloatTime,exportBool(x.bloatRelief),exportBool(x.giAbnormal),(x.giSymptoms||[]).join('、'),x.painLoc||'',exportBool(x.lactuloseTaken),x.lactuloseDose||'',(x.lactuloseEffects||[]).join('、'),x.milkNormalMl||'',exportBool(x.milkLactoseFree),exportBool(x.gas),exportBool(x.difficultBowel)||exportBool(x.strainBowel)||exportBool(x.incompleteBowel),exportBool(x.nausea),exportBool(x.diarrhea)]);});
   sheet('Digestion',gut);
   var per=[['日期','出血类型']];days.forEach(function(d){if(state.periodLog[d])per.push([d,state.periodLog[d]]);});
   state.cycles.forEach(function(c){per.push([c.start+'~'+(c.end||''),'经期中 经量'+c.flow+' 痛经'+(c.pain!=null?c.pain:'-')]);});
@@ -1805,7 +1866,7 @@ function bindSettings(){
     p.conditions=$('#set_cond').value;p.medsNote=$('#set_meds').value;
     t.kcalMin=num($('#t_kmin').value);t.kcalMax=num($('#t_kmax').value);t.proteinMin=num($('#t_pmin').value);t.proteinMax=num($('#t_pmax').value);t.fiberTarget=num($('#t_fiber').value);t.stepsTarget=num($('#t_steps').value);t.waterTarget=num($('#t_water').value);
     t.stageNote=$('#t_stage').value;save();toast('已保存');};
-  $('#resetData').onclick=function(){if(confirm('确定清空全部数据？此操作不可恢复，建议先导出备份。')){localStorage.removeItem(KEY);state=defaultState();save();UI={dashRange:'7',dailyDate:today(),gutRange:'30',weekEnd:today(),exportStart:addDays(today(),-6),exportEnd:today(),calMonth:today().slice(0,7),quickDate:null,expRange:'7',trendTab:'weight',viewStack:['dashboard']};render();toast('已清空');}};
+  $('#resetData').onclick=function(){if(confirm('确定清空全部数据？此操作不可恢复，建议先导出备份。')){localStorage.removeItem(KEY);state=defaultState();save();UI={dashRange:'7',dailyDate:today(),gutRange:'30',weekEnd:today(),exportStart:addDays(today(),-6),exportEnd:today(),calMonth:today().slice(0,7),quickDate:null,expRange:'7',trendTab:'weight',viewStack:['dashboard'],more:{},opt:{}};render();toast('已清空');}};
   var ct=$('#cloudToken');if(ct)ct.onchange=function(){var c=cloudCfg();c.token=ct.value.trim();saveCloud(c);};
   var cg=$('#cloudGist');if(cg)cg.onchange=function(){var c=cloudCfg();c.gistId=cg.value.trim();saveCloud(c);};
   var ca=$('#cloudAuto');if(ca)ca.onchange=function(){var c=cloudCfg();c.auto=ca.checked;saveCloud(c);toast(c.auto?'已开启自动同步':'已关闭自动同步');};
