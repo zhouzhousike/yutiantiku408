@@ -1051,8 +1051,15 @@ function weeklyView(){
     '<div class="grid g2" style="margin-top:12px">'+
     '<div><h2 style="margin-top:0;font-size:14px">体重与围度</h2><table>'+row('本周平均体重',N(m.wAvg)+' kg')+row('上周平均体重',N(m.wPrev)+' kg')+row('两周差值',(m.wDelta!=null?(m.wDelta>0?'+':'')+N(m.wDelta):'—')+' kg')+row('本周最低/最高',N(m.wMin)+' / '+N(m.wMax)+' kg')+row('腰围变化',m.waistChg!=null?m.waistChg+' cm ('+N(m.waistPrev)+'→'+N(m.waistNow)+')':(m.waistNow!=null?N(m.waistNow)+' cm（仅本周）':'—'))+row('大腿围变化',m.thighChg!=null?m.thighChg+' cm ('+N(m.thighPrev)+'→'+N(m.thighNow)+')':(m.thighNow!=null?N(m.thighNow)+' cm（仅本周）':'—'))+'</table></div>'+
     '<div><h2 style="margin-top:0;font-size:14px">饮食</h2><table>'+row('平均每日热量',N(m.avgKcal)+' kcal（有效 '+m.kcalN+'/7）')+row('平均蛋白质',N(m.avgPro)+' g（有效 '+m.proN+'/7）')+row('平均碳水',N(m.avgCarb)+' g（有效 '+m.carbN+'/7）')+row('平均脂肪',N(m.avgFat)+' g（有效 '+m.fatN+'/7）')+row('平均纤维',N(m.avgFiber)+' g（有效 '+m.fibN+'/7）')+row('达标蛋白天数',m.proDays+' / '+m.proDen+'（有记录天数）')+row('跳过午餐天数',m.skipLunch)+row('外卖次数',m.takeout)+'</table></div>'+
-    '<div><h2 style="margin-top:0;font-size:14px">活动</h2><table>'+row('平均每日步数',N(m.avgSteps)+(m.stepsN?'（有效 '+m.stepsN+'/7）':''))+row('总训练次数',m.train)+row('力量训练次数',m.strength)+row('有氧分钟',m.aeroMin)+row('肩/腰/膝不适天',m.painDays)+'</table></div>'+
-    '<div><h2 style="margin-top:0;font-size:14px">运动计划执行</h2><table>'+row('计划训练次数',m.plan.trainingDays)+row('实际完成',m.plan.done)+row('完成率',(m.plan.rate!=null?m.plan.rate+'%':'—'))+row('楼下健身区完成',m.plan.downstairs)+row('居家完成',m.plan.home)+row('平均 RPE',N(m.plan.avgRpe)+'/10')+row('恢复日（D）',m.plan.recovery)+row('顺延次数',m.plan.defer)+'</table></div>'+
+    '<div><h2 style="margin-top:0;font-size:14px">活动</h2><table>'+row('平均每日步数',N(m.avgSteps)+(m.stepsN?'（有效 '+m.stepsN+'/7）':''))+row('总训练次数',m.plan.done)+row('力量训练次数',m.plan.strengthDays)+row('有氧分钟',m.aeroMin)+row('肩/腰/膝不适天',m.painDays)+'</table></div>'+
+    '<div><h2 style="margin-top:0;font-size:14px">运动计划执行</h2><table>'+
+      row('计划训练次数',m.plan.trainingDays)+row('实际完成',m.plan.done)+row('完成率',(m.plan.rate!=null?m.plan.rate+'%':'—'))+
+      row('力量训练',m.plan.strengthDays+' 次 / '+m.plan.strengthMin+' 分钟')+
+      row('坡度走',m.plan.inclineWalkMin+' 分钟')+row('椭圆机',m.plan.ellipticalMin+' 分钟')+row('爬楼机',m.plan.stairMachineMin+' 分钟')+
+      row('低冲击跳操',m.plan.danceMin+' 分钟')+row('轻松走路',m.plan.easyWalkMin+' 分钟')+row('拉伸/活动度',m.plan.mobilityMin+' 分钟')+
+      row('平均 RPE',N(m.plan.avgRpe)+'/10')+row('恢复日（D）',m.plan.recovery)+row('未完成',m.plan.defer)+
+      '</table></div>'+
+
     '<div><h2 style="margin-top:0;font-size:14px">食谱计划执行</h2><table>'+row('计划自炊餐数',m.mealPlan.cookMeals)+row('计划外卖日餐数',m.mealPlan.takeoutMeals)+row('实际记录外卖次数',m.mealPlan.recordedTakeout)+'</table></div>'+
     '<div><h2 style="margin-top:0;font-size:14px">睡眠 / 食欲 / 肠胃 / 月经</h2><table>'+
       row('平均睡眠',N(m.avgSleep)+' h')+row('平均入睡时间',N(m.avgSleepTime))+row('平均疲惫',N(m.avgFatigue)+'/10')+row('平均压力',N(m.avgStress)+'/10')+
@@ -1093,9 +1100,10 @@ function weekMetrics(dates){
   var wpPrev=getPreviousMeasurement('waist',lw?lw.date:null);var waistPrev=wpPrev?wpPrev.value:null;
   var lt=getLatestMeasurement('thigh',dates[dates.length-1]);var thighNow=lt?lt.value:null;
   var tpPrev=getPreviousMeasurement('thigh',lt?lt.date:null);var thighPrev=tpPrev?tpPrev.value:null;
-  var train=count(function(d){return getDay(d).trained;});
-  var strength=count(function(d){return getDay(d).trained&&/力量/.test(getDay(d).trainType||'');});
-  var aeroMin=dates.reduce(function(a,d){var x=getDay(d);return a+(x.trained&&!/力量/.test(x.trainType||'')?num(x.trainMin):0);},0);
+  var ps=planStats(dates);
+  var train=ps.done;
+  var strength=ps.strengthDays;
+  var aeroMin=ps.aeroMin;
   var avgSleepTime=modeSleepTime(dates);
   var ci=cycleInfoAt(dates[dates.length-1]); /* Item4: 历史周报用区间最后一日的周期阶段 */
   var abnormal=dates.map(function(d){var t=state.periodLog[d];return (t==='棕色分泌物'||t==='点滴出血'||t==='少量出血')?t:null;}).filter(Boolean);
@@ -1123,31 +1131,61 @@ function weekMetrics(dates){
     lactulose:count(function(d){return getDay(d).lactuloseTaken;}),
     cycleDay:ci.day!=null?ci.day:null,inPeriod:dates.some(function(d){return state.periodLog[d]==='经期中';}),
     abnormalBleed:abnormal.length?abnormal.join('、'):'无',
-    plan:planStats(dates),
+    plan:ps,
     mealPlan:mealPlanStats(dates)
   };
 }
 function modeSleepTime(dates){var cnt={};dates.forEach(function(d){var s=getDay(d).sleepTime;if(s)cnt[s]=(cnt[s]||0)+1;});var best=null,bn=0;for(var k in cnt)if(cnt[k]>bn){bn=cnt[k];best=k;}return best||'—';}
 
-/* ============ 计划层：训练计划 + 本周食谱（与实际情况严格分离） ============ */
-/* 训练模板：A/B/C/D 循环（练3休1）。地点为一级信息。运动原则：久坐低基础，不安排跑步/HIIT/波比跳/冲刺/高频跳跃/高冲击跳操/每天爬楼/每天力量/力竭。 */
-var TRAIN_TEMPLATES={
-  A:{id:'A',name:'楼下力量A',location:'楼下健身区',type:'strength',plannedMin:30,desc:'下肢+核心低强度力量，循序渐进，每组留有余力，不力竭'},
-  B:{id:'B',name:'居家低冲击有氧',location:'家里',type:'aero',plannedMin:20,desc:'原地踏步/靠墙静蹲/坐姿抬腿等低冲击有氧，不跑步不跳'},
-  C:{id:'C',name:'楼下力量B+有氧',location:'楼下健身区',type:'mixed',plannedMin:40,desc:'上肢+全身力量，接爬楼机（循序渐进，不冲刺不波比）'},
-  D:{id:'D',name:'恢复日',location:'',type:'recovery',plannedMin:0,desc:'主动恢复：拉伸/散步，不安排训练'}
-};
+/* ============ 计划层：训练计划（与实际情况严格分离） ============ */
+/* A/B/C/D 循环（练3休1）。不记录运动地点：运动项目本身已说明需要什么条件。
+   用户只关心「今天练什么、每个项目做多久」。各项目分钟由系统按阶段给出，不需手填总时长。 */
+var EX_NAME={A:'力量训练A',B:'低冲击跳操日',C:'力量训练B + 有氧',D:'恢复日'};
+var EX_DESC={A:'下肢+核心低强度力量，接坡度走；每组留有余力，不力竭',B:'低冲击跳操（不大量跳跃），接拉伸/活动度',C:'上肢+全身力量，接坡度走/椭圆机/爬楼机',D:'主动恢复：轻松走路 + 拉伸，不安排训练'};
+var EX_ACTIONS={A:['腿举 3×10-12','臀推/臀桥 3×10-15','坐姿划船 3×10-12','坐姿推胸 2×10-12','髋外展 2×12-15','Dead Bug 3×每侧8'],C:['徒手深蹲/高脚杯深蹲 3×8-12','坐姿腿弯举 3×10-12','高位下拉 3×10-12','Face Pull 2×12-15','臀桥/髋外展 2×12-15','Bird Dog 3×每侧8']};
+var EX_MOBILITY_B=['猫牛式','胸椎活动','髋屈肌拉伸','腘绳肌温和拉伸','肩部轻活动'];
+var EX_STAGE_MAX=4;
+/* 各有氧/项目按阶段(1-4)的推荐分钟；下表标=阶段 */
+var AERO_INCLINE=[0,8,10,12,15];   // A/C 坡度走
+var DANCE_MIN=[0,20,22,25,30];     // B 低冲击跳操
+var AERO_ELLIP=[0,10,12,15,18];    // 换成椭圆机
+var STAIR_MIN=[0,5,8,10,12];       // 换成爬楼机（独立渐进，不照搬坡度走）
+var EASYWALK_MIN=[0,25,25,28,30];  // B 换成轻松走 / D 恢复走路
 var TRAIN_CYCLE=['A','B','C','D'];
 function plStart(){return state.exercisePlan.cycleStartDate||today();}
 function templateOn(date){var i=((daysBetween(plStart(),date)%4)+4)%4;return TRAIN_CYCLE[i];}
-function planEntry(date){var t=templateOn(date);var ex=state.plans.exercise[date];if(ex)return ex;var T=TRAIN_TEMPLATES[t];return {templateId:t,location:T.location,plannedMin:T.plannedMin,status:(t==='D'?'recovery':'planned')};}
-function planWeek(){var w=Math.floor(daysBetween(plStart(),today())/7)+1;return w<1?1:(w>4?4:w);}
-function climbMin(){var w=planWeek();return [0,5,7,9,13][w];}
-function liftHint(){var w=planWeek();if(w>=4)return '爬楼机已到10-15分钟，维持即可';return '本周爬楼机建议≤'+climbMin()+'分钟（第'+w+'周循序渐进，第1周仅体验）';}
+function exerciseStage(){var w=state.exercisePlan.progressionWeek;w=w||1;return w<1?1:w;}
+function progStage(){return Math.min(exerciseStage(),EX_STAGE_MAX);}
+function defaultAero(t){return t==='A'?'inclineWalk':t==='B'?'dance':t==='C'?'inclineWalk':'easyWalk';}
+function aeroMinFor(aeroType,st){var i=Math.min(st,EX_STAGE_MAX);if(aeroType==='inclineWalk')return AERO_INCLINE[i];if(aeroType==='elliptical')return AERO_ELLIP[i];if(aeroType==='stairMachine')return STAIR_MIN[i];if(aeroType==='dance')return DANCE_MIN[i];if(aeroType==='easyWalk')return EASYWALK_MIN[i];return 0;}
+function daySuggestion(date){
+  var t=templateOn(date);var st=progStage();
+  var override=(state.plans.exercise[date]&&state.plans.exercise[date].aeroType)?state.plans.exercise[date].aeroType:defaultAero(t);
+  var parts={warmup:0,strength:0,inclineWalk:0,elliptical:0,stairMachine:0,dance:0,easyWalk:0,mobility:0};
+  if(t==='A'){parts.warmup=6;parts.strength=30;parts[override]=aeroMinFor(override,st);parts.mobility=6;}
+  else if(t==='B'){parts.warmup=5;parts[override]=aeroMinFor(override,st);parts.mobility=8;}
+  else if(t==='C'){parts.warmup=6;parts.strength=30;parts[override]=aeroMinFor(override,st);parts.mobility=6;}
+  else if(t==='D'){parts[override]=aeroMinFor(override,st);parts.mobility=8;}
+  return {templateId:t,aeroType:override,parts:parts};
+}
+function planEntry(date){
+  var sug=daySuggestion(date);var ex=state.plans.exercise[date];
+  var status='planned';if(ex&&ex.status)status=ex.status;else if(sug.templateId==='D')status='recovery';
+  return {templateId:sug.templateId,aeroType:sug.aeroType,parts:sug.parts,status:status,rpe:(ex&&ex.rpe!=null)?ex.rpe:null,feeling:(ex&&ex.feeling)||'',liftNote:(ex&&ex.liftNote)||''};
+}
+function planTotalMin(parts){var s=0;for(var k in parts)s+=parts[k];return s;}
 function plEnsureDay(d){if(!state.days[d])state.days[d]={};return state.days[d];}
-function completeTraining(date,r){r=r||{};var t=templateOn(date);var T=TRAIN_TEMPLATES[t];state.plans.exercise[date]={templateId:t,location:r.location||T.location,plannedMin:T.plannedMin,status:'done',rpe:(r.rpe===''||r.rpe==null)?null:num(r.rpe),feeling:r.feeling||''};var day=plEnsureDay(date);day.trained=true;day.trainType=T.name;day.trainMin=(r.min!=null&&r.min!=='')?num(r.min):T.plannedMin;day.workoutLocation=r.location||T.location;day.workoutRpe=(r.rpe===''||r.rpe==null)?null:num(r.rpe);day.workoutFeeling=r.feeling||'';if(r.lifts&&r.lifts.length)day.lifts=r.lifts;save();}
-function acknowledgeRecovery(date){var t=templateOn(date);state.plans.exercise[date]={templateId:t,location:'',plannedMin:0,status:'recovery'};var day=plEnsureDay(date);day.recoveryDone=true;save();}
-function skipTraining(date){var t=templateOn(date);var T=TRAIN_TEMPLATES[t];state.plans.exercise[date]={templateId:t,location:T.location,plannedMin:T.plannedMin,status:'skipped'};save();}
+function completeTraining(date,r){r=r||{};var t=templateOn(date);var sug=daySuggestion(date);var aeroType=sug.aeroType;
+  var parts={};for(var k in sug.parts){parts[k]={planned:sug.parts[k],actual:(r.parts&&r.parts[k]!=null&&r.parts[k]!=='')?num(r.parts[k]):null};}
+  state.plans.exercise[date]={templateId:t,aeroType:aeroType,parts:sug.parts,status:'done',rpe:(r.rpe===''||r.rpe==null)?null:num(r.rpe),feeling:r.feeling||'',liftNote:r.liftNote||''};
+  var day=plEnsureDay(date);day.trained=true;day.trainType=(t==='A'?'力量训练A':t==='B'?'低冲击跳操':t==='C'?'力量训练B+有氧':'恢复');
+  var sum=0;for(var k2 in parts){if(parts[k2].actual!=null)sum+=parts[k2].actual;}day.trainMin=sum;day.workoutParts=parts;day.workoutRpe=(r.rpe===''||r.rpe==null)?null:num(r.rpe);day.workoutFeeling=r.feeling||'';if(r.lifts&&r.lifts.length)day.lifts=r.lifts;save();}
+function acknowledgeRecovery(date){var t=templateOn(date);var st=progStage();var walk=EASYWALK_MIN[st];
+  state.plans.exercise[date]={templateId:t,aeroType:'easyWalk',parts:{easyWalk:walk,mobility:8},status:'recovery'};
+  var day=plEnsureDay(date);day.recoveryDone=true;day.trained=true;day.trainType='恢复';
+  day.workoutParts={easyWalk:{planned:walk,actual:walk},mobility:{planned:8,actual:8}};day.trainMin=walk+8;save();}
+function skipTraining(date){var t=templateOn(date);var sug=daySuggestion(date);state.plans.exercise[date]={templateId:t,aeroType:sug.aeroType,parts:sug.parts,status:'skipped'};save();}
+function enterNextStage(){var s=exerciseStage();if(s>=EX_STAGE_MAX)return false;state.exercisePlan.progressionWeek=s+1;save();return true;}
 
 /* 食谱模板：用户份量 肉/鱼虾熟重130-150g，米饭100-120g，蔬菜200-250g；禁止西葫芦；鸡肉=去皮鸡腿肉；牛奶=无乳糖牛奶 */
 function FOOD(name,gram,kcal,p,c,f,fi){return {name:name,gram:gram,kcal:kcal,protein:p,carb:c,fat:f,fiber:fi};}
@@ -1214,45 +1252,118 @@ function weekMealPlans(){var mon=mondayOf(today());return rangeDays(addDays(mon,
 function shoppingList(){var plans=weekMealPlans();var cnt={};plans.forEach(function(o){var p=o.plan;if(p.lunchMode==='takeout'||p.dinnerMode==='takeout')return;['breakfast','lunch','snack','dinner'].forEach(function(m){(p[m]||[]).forEach(function(it){cnt[it.name]=(cnt[it.name]||0)+1;});});});return Object.keys(cnt).map(function(k){return {name:k,times:cnt[k],reuse:cnt[k]>1};}).sort(function(a,b){return b.times-a.times;});}
 
 /* 周报扩展统计 */
-function planStats(dates){var trainingDays=0,done=0,downstairs=0,home=0,rpeSum=0,rpeN=0,recovery=0,defer=0;dates.forEach(function(d){var t=templateOn(d);if(t==='D'){recovery++;return;}trainingDays++;var pe=state.plans.exercise[d];if(pe&&pe.status==='done'){done++;if(pe.location==='楼下健身区')downstairs++;if(pe.location==='家里')home++;if(pe.rpe!=null){rpeSum+=num(pe.rpe);rpeN++;}}else defer++;});return {trainingDays:trainingDays,done:done,rate:trainingDays?round(done/trainingDays*100,0):null,downstairs:downstairs,home:home,avgRpe:rpeN?round(rpeSum/rpeN,1):null,recovery:recovery,defer:defer};}
+function planStats(dates){var trainingDays=0,done=0,recovery=0,defer=0;var strengthDays=0,strengthMin=0;var inclineWalkMin=0,ellipticalMin=0,stairMachineMin=0,danceMin=0,easyWalkMin=0,mobilityMin=0,aeroMin=0;var rpeSum=0,rpeN=0;
+  dates.forEach(function(d){
+    var t=templateOn(d);var pe=state.plans.exercise[d];var day=getDay(d);
+    /* 实际分钟统计（含恢复日走路/拉伸） */
+    if(day.workoutParts){var wp=day.workoutParts;
+      ['strength','inclineWalk','elliptical','stairMachine','dance','easyWalk','mobility'].forEach(function(k){var p=wp[k];if(p&&p.actual!=null){if(k==='strength'){strengthMin+=p.actual;strengthDays++;}else if(k==='inclineWalk')inclineWalkMin+=p.actual;else if(k==='elliptical')ellipticalMin+=p.actual;else if(k==='stairMachine')stairMachineMin+=p.actual;else if(k==='dance')danceMin+=p.actual;else if(k==='easyWalk')easyWalkMin+=p.actual;else if(k==='mobility')mobilityMin+=p.actual;}});
+      aeroMin+=(wp.inclineWalk&&wp.inclineWalk.actual!=null?wp.inclineWalk.actual:0)+(wp.elliptical&&wp.elliptical.actual!=null?wp.elliptical.actual:0)+(wp.stairMachine&&wp.stairMachine.actual!=null?wp.stairMachine.actual:0)+(wp.dance&&wp.dance.actual!=null?wp.dance.actual:0)+(wp.easyWalk&&wp.easyWalk.actual!=null?wp.easyWalk.actual:0);
+      if(day.workoutRpe!=null){rpeSum+=num(day.workoutRpe);rpeN++;}
+    }
+    if(t==='D'){recovery++;return;}
+    trainingDays++;
+    if(pe&&pe.status==='done')done++;else defer++;
+  });
+  return {trainingDays:trainingDays,done:done,rate:trainingDays?round(done/trainingDays*100,0):null,recovery:recovery,defer:defer,strengthDays:strengthDays,strengthMin:strengthMin,inclineWalkMin:inclineWalkMin,ellipticalMin:ellipticalMin,stairMachineMin:stairMachineMin,danceMin:danceMin,easyWalkMin:easyWalkMin,mobilityMin:mobilityMin,aeroMin:aeroMin,avgRpe:rpeN?round(rpeSum/rpeN,1):null};
+}
 function mealPlanStats(dates){var cookMeals=0,takeoutMeals=0,recordedTakeout=0;dates.forEach(function(d){var p=state.plans.meals[d];if(!p){cookMeals+=4;return;}['breakfast','lunch','snack','dinner'].forEach(function(m){if(m==='lunch'&&p.lunchMode==='takeout')takeoutMeals++;else if(m==='dinner'&&p.dinnerMode==='takeout')takeoutMeals++;else cookMeals++;});var day=state.days[d];if(day&&day.takeoutDay)recordedTakeout++;});return {cookMeals:cookMeals,takeoutMeals:takeoutMeals,recordedTakeout:recordedTakeout};}
 
 /* ---- 首页今日计划卡片 ---- */
 function todayPlanCard(){
-  var end=today();var t=templateOn(end);var T=TRAIN_TEMPLATES[t];var pe=planEntry(end);
-  var trainLine=t==='D'?'恢复日（主动恢复，非失败）':(pe.status==='done'?'今日训练已完成 ✓':T.name+' · '+T.location+' · 约'+T.plannedMin+'分钟');
+  var end=today();var t=templateOn(end);var pe=planEntry(end);var sug=daySuggestion(end);
+  var total=planTotalMin(sug.parts);
+  var parts=[];
+  if(sug.parts.warmup)parts.push('热身 '+sug.parts.warmup+'分钟');
+  if(sug.parts.strength)parts.push('力量 '+sug.parts.strength+'分钟');
+  if(sug.parts.inclineWalk)parts.push('坡度走 '+sug.parts.inclineWalk+'分钟');
+  if(sug.parts.elliptical)parts.push('椭圆机 '+sug.parts.elliptical+'分钟');
+  if(sug.parts.stairMachine)parts.push('爬楼机 '+sug.parts.stairMachine+'分钟');
+  if(sug.parts.dance)parts.push('跳操 '+sug.parts.dance+'分钟');
+  if(sug.parts.easyWalk)parts.push('轻松走 '+sug.parts.easyWalk+'分钟');
+  if(sug.parts.mobility)parts.push('拉伸 '+sug.parts.mobility+'分钟');
+  var trainLine=t==='D'?'恢复日（主动恢复，非失败）':(pe.status==='done'?'今日训练已完成 ✓':EX_NAME[t]+' · 预计约'+total+'分钟');
   var plan=mealPlanFor(end);var bits=[];
   if(plan.lunchMode==='takeout'||plan.dinnerMode==='takeout')bits.push('含外卖日');
   if(plan.nextLunchFromDinner)bits.push('午餐=前晚剩余');
   var mealLine=bits.length?bits.join(' · '):'自炊日（4餐已排）';
+  var actionsBtn='<button class="btn sm ghost" onclick="UI.showActions=!UI.showActions;render();">查看动作</button>';
+  var checkinBtn='<button class="btn sm ghost" onclick="goTrainingCheckin()">开始打卡</button>';
+  var skipBtn=(t==='D')?'':'<button class="btn sm ghost" onclick="skipToday()">顺延到明天</button>';
+  var actionsHtml=UI.showActions?('<div class="note" style="margin-top:8px">'+actionsFor(t)+'</div>'):'';
   return '<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">今日计划</h2><div><button class="btn sm ghost" onclick="go(\'training\')">训练</button> <button class="btn sm ghost" onclick="go(\'mealplan\')">食谱</button></div></div>'+
     '<div class="row" style="margin-top:6px"><span class="tag">'+t+'</span><span class="mini">'+trainLine+'</span></div>'+
+    '<div class="mini" style="margin-top:6px">'+parts.map(function(p){return '✅ '+p;}).join('　')+'</div>'+
+    '<div class="row" style="margin-top:8px">'+actionsBtn+checkinBtn+skipBtn+'</div>'+
+    actionsHtml+
     '<div class="row" style="margin-top:6px"><span class="mini">'+ICON('plate')+' '+mealLine+'</span></div></div>';
 }
+function actionsFor(t){
+  if(t==='A'||t==='C')return '力量动作：<br>'+EX_ACTIONS[t].join('；');
+  if(t==='B')return '拉伸/活动度：<br>'+EX_MOBILITY_B.join('；');
+  if(t==='D')return '恢复：轻松走路 + 拉伸（不安排训练）';
+  return '';
+}
+function goTrainingCheckin(){UI.trainingCheckin=true;go('training');}
+function skipToday(){skipTraining(today());toast('已顺延（不改后续计划）');render();}
+function aeroBtn(cur,val,label){return '<button class="btn sm '+(cur===val?'':'ghost')+'" onclick="setAero(\''+val+'\')">'+label+'</button>';}
+function setAero(val){var end=today();var ex=state.plans.exercise[end]||{};ex.aeroType=val;state.plans.exercise[end]=ex;save();render();}
 /* ---- 训练计划页 ---- */
 function trainingView(){
-  var end=today();var t=templateOn(end);var T=TRAIN_TEMPLATES[t];var pe=planEntry(end);var done=pe.status==='done';var isRecovery=t==='D';
+  var end=today();var t=templateOn(end);var pe=planEntry(end);var sug=daySuggestion(end);var done=pe.status==='done';var isRecovery=t==='D';
   var week=rangeDays(end,7);
-  var rows=week.map(function(d){var tt=templateOn(d);var pp=planEntry(d);var T2=TRAIN_TEMPLATES[tt];var st=pp.status==='done'?'✓ 已完成':(tt==='D'?'恢复日':(pp.status==='skipped'?'已跳过':'计划'));return '<tr><td>'+d.slice(5)+'</td><td>'+tt+'</td><td>'+T2.name+'</td><td>'+(T2.location||'—')+'</td><td>'+st+'</td></tr>';}).join('');
-  var todayCard='<div class="card"><h2 style="margin:0 0 8px">今日训练计划（'+t+'）</h2>'+
-    '<div class="row"><span class="tag">'+T.name+'</span><span class="mini">'+T.location+' · 约'+T.plannedMin+'分钟</span></div>'+
-    '<p class="note" style="margin-top:8px">'+T.desc+'</p>'+
+  function partRows(parts){
+    var map=[['warmup','热身'],['strength','力量'],['inclineWalk','坡度走'],['elliptical','椭圆机'],['stairMachine','爬楼机'],['dance','跳操'],['easyWalk','轻松走'],['mobility','拉伸/活动度']];
+    return map.filter(function(m){return parts[m[0]]>0;}).map(function(m){return '<li>'+m[1]+'：'+parts[m[0]]+'分钟</li>';}).join('');
+  }
+  var weekCards=week.map(function(d){var tt=templateOn(d);var sp=daySuggestion(d);var total=planTotalMin(sp.parts);var st=planEntry(d).status;var stTxt=st==='done'?'✓已完成':(tt==='D'?'恢复日':(st==='skipped'?'已顺延':'计划'));
+    return '<div class="card" style="padding:12px"><div class="row" style="justify-content:space-between"><b>'+d.slice(5)+' · '+EX_NAME[tt]+'</b><span class="mini">'+stTxt+'</span></div><div class="mini" style="margin-top:4px">预计约'+total+'分钟</div><ul class="dlist" style="margin:6px 0 0;padding-left:18px">'+partRows(sp.parts)+'</ul></div>';}).join('');
+  /* 疼痛提示（不做医学判断） */
+  var day=getDay(end);var painNotes=[];
+  if(num(day.painKnee)>=5)painNotes.push('今天暂不优先爬楼机，可考虑椭圆机或轻松走。');
+  if(num(day.painLowerBack)>=5)painNotes.push('今天降低强度，并避免明显诱发腰部不适的动作。');
+  if(num(day.painShoulder)>=5)painNotes.push('上肢动作适当降低重量；出现明显疼痛的动作可以跳过。');
+  var painHtml=painNotes.length?'<div class="note" style="margin-top:8px">'+painNotes.join(' ')+'</div>':'';
+  var total=planTotalMin(sug.parts);
+  var todayCard='<div class="card"><h2 style="margin:0 0 8px">今日运动建议（'+EX_NAME[t]+'）</h2>'+
+    '<div class="row"><span class="tag">'+t+'</span><span class="mini">预计约'+total+'分钟 · 第'+exerciseStage()+'周强度</span></div>'+
+    '<p class="note" style="margin-top:8px">'+EX_DESC[t]+'</p>'+
     (isRecovery?
       (done?'<div class="alert" style="margin-top:8px">恢复日 ✓ 已完成（主动恢复，不是失败）</div>':'<button class="btn" id="ackRec">标记恢复日完成</button>'):
-      (done?'<div class="alert" style="margin-top:8px">今日训练已完成 ✓</div>':
-        '<div class="grid g2" style="margin-top:10px"><label class="fld"><b>实际地点</b><select id="exLoc">'+['楼下健身区','家里','户外','其他'].map(function(x){return '<option '+(T.location===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></label><label class="fld"><b>实际分钟</b><input type="number" id="exMin" value="'+T.plannedMin+'"></label></div>'+
-        '<label class="fld" style="margin-top:8px"><b>RPE 0-10</b><input type="number" min="0" max="10" id="exRpe"></label>'+
-        '<label class="fld" style="margin-top:8px"><b>感受</b><input id="exFeel" placeholder="如：轻松/吃力"></label>'+
-        '<div class="row" style="margin-top:10px"><button class="btn" id="exDone">完成训练（写入今日实际）</button><button class="btn ghost" id="exSkip">今天不练（顺延）</button></div>'))
-    +'<div class="note" style="margin-top:8px">'+liftHint()+'</div></div>';
-  var weekCard='<div class="card"><h2 style="margin-top:0">本周训练安排（A/B/C/D 循环，练3休1）</h2><table><thead><tr><th>日期</th><th>模板</th><th>内容</th><th>地点</th><th>状态</th></tr></thead><tbody>'+rows+'</tbody></table><div class="note">漏练不改变后续计划（按 cycleStartDate 固定循环）。D 日为恢复日，显示「恢复日✓」而非失败。</div></div>';
-  return backBtn()+'<h1>我的训练计划</h1><div class="sub">计划层：列出安排，点击"完成训练"才写入今日实际训练数据</div>'+todayCard+weekCard;
+      (done?'<div class="alert" style="margin-top:8px">今日训练已完成 ✓</div>':'<div class="row" style="margin-top:10px"><button class="btn" id="startCheckin">开始打卡</button><button class="btn ghost" id="exSkip">顺延到明天</button></div>'))+
+    painHtml;
+  if(UI.trainingCheckin&&!isRecovery&&!done){
+    todayCard+='<div class="card" style="margin-top:10px"><h2 style="margin:0 0 8px">打卡 · '+EX_NAME[t]+'</h2>';
+    if(t==='A'||t==='C'){
+      todayCard+='<div class="row" style="margin-bottom:8px"><span class="mini">有氧方式：</span>'+aeroBtn(sug.aeroType,'inclineWalk','坡度走')+aeroBtn(sug.aeroType,'elliptical','椭圆机')+aeroBtn(sug.aeroType,'stairMachine','爬楼机')+'</div>';
+    }else if(t==='B'){
+      todayCard+='<div class="row" style="margin-bottom:8px"><span class="mini">本次内容：</span>'+aeroBtn(sug.aeroType,'dance','低冲击跳操')+aeroBtn(sug.aeroType,'easyWalk','轻松走')+'</div>';
+    }
+    var map=[['warmup','热身'],['strength','力量'],['inclineWalk','坡度走'],['elliptical','椭圆机'],['stairMachine','爬楼机'],['dance','跳操'],['easyWalk','轻松走'],['mobility','拉伸/活动度']];
+    map.forEach(function(m){if(sug.parts[m[0]]>0){todayCard+='<label class="fld" style="margin-top:8px"><b>'+m[1]+' 实际分钟（建议'+sug.parts[m[0]]+'）</b><input type="number" id="wp_'+m[0]+'" placeholder="'+sug.parts[m[0]]+'"></label>';}});
+    todayCard+='<label class="fld" style="margin-top:8px"><b>RPE 0-10</b><input type="number" min="0" max="10" id="exRpe"></label>'+
+      '<label class="fld" style="margin-top:8px"><b>感受</b><input id="exFeel" placeholder="如：轻松/吃力"></label>'+
+      '<div class="row" style="margin-top:10px"><button class="btn" id="exDone">完成训练（写入今日实际）</button><button class="btn ghost" id="cancelCheckin">取消</button></div></div>';
+  }
+  if((t==='A'||t==='C')&&!isRecovery){
+    todayCard+='<div class="note" style="margin-top:8px"><b>力量动作参考：</b><br>'+EX_ACTIONS[t].join('；')+'</div>';
+  }else if(t==='B'){
+    todayCard+='<div class="note" style="margin-top:8px"><b>拉伸/活动度参考：</b><br>'+EX_MOBILITY_B.join('；')+'</div>';
+  }
+  todayCard+='</div>';
+  var weekCard='<div class="card" style="margin-top:10px"><h2 style="margin-top:0">本周训练安排（A/B/C/D 循环，练3休1）</h2>'+weekCards+'<div class="note">漏练不改变后续计划（按 cycleStartDate 固定循环）。D 日为恢复日，显示「恢复日✓」而非失败。不记录运动地点。</div></div>';
+  return backBtn()+'<h1>我的训练计划</h1><div class="sub">计划层：系统给出每日具体建议，点击「开始打卡」才写入今日实际</div>'+todayCard+weekCard;
 }
 function bindTraining(){
   var end=today();
   var ack=$('#ackRec');if(ack)ack.onclick=function(){acknowledgeRecovery(end);toast('已标记恢复日');render();};
-  var doneBtn=$('#exDone');if(doneBtn)doneBtn.onclick=function(){var loc=$('#exLoc').value,min=$('#exMin').value,rpe=$('#exRpe').value,feel=$('#exFeel').value;completeTraining(end,{location:loc,min:min,rpe:rpe,feeling:feel});toast('已记录今日训练');render();};
-  var skip=$('#exSkip');if(skip)skip.onclick=function(){skipTraining(end);toast('已顺延（不改后续计划）');render();};
+  var sc=$('#startCheckin');if(sc)sc.onclick=function(){UI.trainingCheckin=true;render();};
+  var cx=$('#cancelCheckin');if(cx)cx.onclick=function(){UI.trainingCheckin=false;render();};
+  var skip=$('#exSkip');if(skip)skip.onclick=function(){skipTraining(end);toast('已顺延（不改后续计划）');UI.trainingCheckin=false;render();};
+  var doneBtn=$('#exDone');if(doneBtn)doneBtn.onclick=function(){
+    var parts={};['warmup','strength','inclineWalk','elliptical','stairMachine','dance','easyWalk','mobility'].forEach(function(k){var el=document.getElementById('wp_'+k);if(el&&el.value!=='')parts[k]=num(el.value);});
+    var rpe=$('#exRpe').value,feel=$('#exFeel').value;
+    completeTraining(end,{parts:parts,rpe:rpe,feeling:feel});toast('已记录今日训练');UI.trainingCheckin=false;render();};
 }
 /* ---- 本周食谱页 ---- */
 function mealplanView(){
@@ -1551,7 +1662,9 @@ function chatGptText(s,e){
   lines.push('二甲双胍：'+metDays+' 天已服，'+metMiss+' 天忘记（区间 '+dates.length+' 天）。');
   lines.push('');
   lines.push('【运动计划】');
-  lines.push('计划训练 '+n0(m.plan.trainingDays)+' 次，实际完成 '+n0(m.plan.done)+' 次，完成率 '+(m.plan.rate!=null?m.plan.rate+'%':'—')+'；楼下健身区 '+n0(m.plan.downstairs)+' 次，居家 '+n0(m.plan.home)+' 次，平均 RPE '+fmt(m.plan.avgRpe)+'/10；恢复日 '+n0(m.plan.recovery)+' 天，顺延 '+n0(m.plan.defer)+' 次（漏练不改后续计划）。');
+  lines.push('本周计划训练 '+n0(m.plan.trainingDays)+' 次，实际完成 '+n0(m.plan.done)+' 次，完成率 '+(m.plan.rate!=null?m.plan.rate+'%':'—')+'；平均 RPE '+fmt(m.plan.avgRpe)+'/10；恢复日 '+n0(m.plan.recovery)+' 天，未完成 '+n0(m.plan.defer)+' 次（漏练不改后续计划）。');
+  lines.push('力量训练 '+n0(m.plan.strengthDays)+' 次，共 '+n0(m.plan.strengthMin)+' 分钟；跑步机坡度走 '+n0(m.plan.inclineWalkMin)+' 分钟；椭圆机 '+n0(m.plan.ellipticalMin)+' 分钟；爬楼机 '+n0(m.plan.stairMachineMin)+' 分钟；低冲击跳操 '+n0(m.plan.danceMin)+' 分钟；轻松走路 '+n0(m.plan.easyWalkMin)+' 分钟；拉伸/活动度 '+n0(m.plan.mobilityMin)+' 分钟。');
+  lines.push('肩/腰/膝明显不适：'+n0(m.painDays)+' 天（仅记录，不做医学判断）。');
   lines.push('');
   lines.push('【食谱计划】');
   lines.push('计划自炊餐 '+n0(m.mealPlan.cookMeals)+' 餐，计划外卖日 '+n0(m.mealPlan.takeoutMeals)+' 餐；实际记录外卖 '+n0(m.mealPlan.recordedTakeout)+' 次。目标 1550-1650 kcal/天、蛋白 90-100g。');
@@ -1632,8 +1745,10 @@ function buildXlsx(days){
   var diet=[['日期','餐次','食物','克数','热量','蛋白','碳水','脂肪','纤维']];
   days.forEach(function(d){var m=(getDay(d).meals||{});MEALS.forEach(function(mp){(m[mp[0]]||[]).forEach(function(it){diet.push([d,mp[1],it.name,it.gram,it.kcal,it.protein,it.carb,it.fat,it.fiber]);});});});
   sheet('Meals',diet);
-  var ex=[['日期','步数','是否训练','训练类型','训练分钟','动作','重量','组数','次数','RPE']];
-  days.forEach(function(d){var x=getDay(d);(x.lifts||[]).forEach(function(l){ex.push([d,x.steps,exportBool(x.trained),x.trainType,x.trainMin,l.name,l.weight,l.sets,l.reps,l.rpe]);});if(!(x.lifts||[]).length)ex.push([d,x.steps,exportBool(x.trained),x.trainType,x.trainMin,'','','','','']);});
+  var ex=[['日期','步数','是否训练','训练类型','训练分钟','热身实际','力量实际','坡度走实际','椭圆机实际','爬楼机实际','跳操实际','轻松走实际','拉伸实际','动作','重量','组数','次数','RPE']];
+  days.forEach(function(d){var x=getDay(d);var wp=x.workoutParts||{};function a(k){return (wp[k]&&wp[k].actual!=null)?wp[k].actual:'';}
+    (x.lifts||[]).forEach(function(l){ex.push([d,x.steps,exportBool(x.trained),x.trainType,x.trainMin,a('warmup'),a('strength'),a('inclineWalk'),a('elliptical'),a('stairMachine'),a('dance'),a('easyWalk'),a('mobility'),l.name,l.weight,l.sets,l.reps,l.rpe]);});
+    if(!(x.lifts||[]).length)ex.push([d,x.steps,exportBool(x.trained),x.trainType,x.trainMin,a('warmup'),a('strength'),a('inclineWalk'),a('elliptical'),a('stairMachine'),a('dance'),a('easyWalk'),a('mobility'),'','','','','']);});
   sheet('Exercise',ex);
   var gut=[['日期','排便','次数','Bristol','腹胀','腹胀时段','排气','乳果糖','普通牛奶ml','无乳糖']];
   days.forEach(function(d){var x=getDay(d);gut.push([d,exportBool(x.bowel),x.bowelCount,x.bristol,x.bloat,x.bloatTime,x.gas,exportBool(x.lactuloseTaken),x.milkNormalMl,exportBool(x.milkLactoseFree)]);});
@@ -1646,8 +1761,9 @@ function buildXlsx(days){
   var wk=[['区间','平均体重','平均热量','平均蛋白','平均步数','训练次数','排便天数','平均腹胀','失控进食']];
   for(var i=0;i+6<days.length;i+=7){var seg=rangeDays(days[i+6],7);var mm=weekMetrics(seg);wk.push([days[i]+'~'+days[i+6],mm.wAvg,mm.avgKcal,mm.avgPro,mm.avgSteps,mm.train,mm.bowelDays,mm.avgBloat,mm.binge]);}
   sheet('Weekly',wk);
-  var exPlan=[['日期','模板','地点','计划分钟','状态','RPE','感受']];
-  days.forEach(function(d){var pe=planEntry(d);exPlan.push([d,pe.templateId,pe.location||'',pe.plannedMin,(pe.status==='done'?'已完成':(pe.status==='recovery'?'恢复日':(pe.status==='skipped'?'已跳过':'计划'))),pe.rpe!=null?pe.rpe:'',pe.feeling||'']);});
+  var exPlan=[['日期','模板','有氧类型','热身','力量','坡度走','椭圆机','爬楼机','跳操','轻松走','拉伸','计划分钟','状态','RPE','感受']];
+  days.forEach(function(d){var pe=planEntry(d);var p=pe.parts;var planMin=0;for(var k in p)planMin+=p[k];
+    exPlan.push([d,pe.templateId,pe.aeroType,p.warmup,p.strength,p.inclineWalk,p.elliptical,p.stairMachine,p.dance,p.easyWalk,p.mobility,planMin,(pe.status==='done'?'已完成':(pe.status==='recovery'?'恢复日':(pe.status==='skipped'?'已跳过':'计划'))),pe.rpe!=null?pe.rpe:'',pe.feeling||'']);});
   sheet('ExercisePlan',exPlan);
   var mealPlan=[['日期','早餐','午餐','下午加餐','晚餐','午餐模式','晚餐模式','便当（前晚剩余）']];
   days.forEach(function(d){var p=mealPlanFor(d);function txt(arr){return (arr||[]).map(function(it){return it.name+' '+it.gram+'g';}).join(' + ')||'';}var lunch=p.lunchMode==='takeout'?'外卖日':txt(p.lunch);var dinner=p.dinnerMode==='takeout'?'外卖日':txt(p.dinner);mealPlan.push([d,txt(p.breakfast),lunch,txt(p.snack),dinner,p.lunchMode,p.dinnerMode,p.nextLunchFromDinner?'是':'否']);});
@@ -1675,6 +1791,10 @@ function settingsView(){
       '</div>'+
       '<label class="fld" style="margin-top:10px"><b>分阶段步数计划备注</b><textarea id="t_stage" rows="2" style="width:100%">'+esc(t.stageNote||'')+'</textarea></label>'+
       '</div>'+
+    '<div class="card"><h2 style="margin-top:0">运动阶段</h2>'+
+      '<div class="row"><span class="tag">第 '+exerciseStage()+' 周 / 阶段</span><span class="mini">'+(exerciseStage()>=EX_STAGE_MAX?'已完成第一阶段4周，请结合实际完成率、RPE 与不适评分决定是否继续':('当前按第'+progStage()+'周强度给建议'))+'</span></div>'+
+      '<div class="note">第4周后不再自动加量（坡度走不超15分钟、跳操不超30分钟、爬楼机不超12分钟）。A：力量A+坡度走；B：低冲击跳操；C：力量B+有氧；D：恢复。不记录运动地点。</div>'+
+      '<div class="row" style="margin-top:10px"><button class="btn" id="nextStage">进入下一阶段</button></div></div>'+
     cloudSyncCard()+
     '<div class="card"><div class="row"><button class="btn" id="saveSettings">保存设置</button><button class="btn warn" id="resetData">清空全部数据</button></div><div class="note">清空不可恢复，请先导出备份。</div></div>';
 }
@@ -1691,6 +1811,7 @@ function bindSettings(){
   var ca=$('#cloudAuto');if(ca)ca.onchange=function(){var c=cloudCfg();c.auto=ca.checked;saveCloud(c);toast(c.auto?'已开启自动同步':'已关闭自动同步');};
   var cp=$('#cloudPush');if(cp)cp.onclick=function(){cloudPush();};
   var cpl=$('#cloudPull');if(cpl)cpl.onclick=function(){cloudPull();};
+  var ns=$('#nextStage');if(ns)ns.onclick=function(){var ok=enterNextStage();toast(ok?'已进入下一阶段':'已完成第一阶段4周，请结合实际完成率、RPE和不适评分决定是否进入下一阶段');render();};
 }
 
 /* ============ 云同步（GitHub 私密 Gist 做中转） ============ */
