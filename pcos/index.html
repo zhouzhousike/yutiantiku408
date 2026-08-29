@@ -11,22 +11,22 @@
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
   :root{
-    --bg:#F6F4EF; --panel:#FFFFFF; --ink:#33322F; --muted:#9A9286; --line:#EAE5DC;
-    --brand:#5E8B7E; --brand-d:#3F6B5F; --brand-l:#DCE8E3;
-    --accent:#C08A6E; --accent-l:#F0E3DA; --soft:#EFF3F0;
-    --warn:#C9A24B; --ok:#5E8B7E; --period:#C08A6E;
-    --r:14px; --sh:0 1px 3px rgba(60,50,40,.06),0 6px 18px rgba(60,50,40,.05);
+    --bg:#020202; --panel:#1f2634; --ink:#b2d5e5; --muted:rgba(178,213,229,.55); --line:rgba(178,213,229,.14);
+    --brand:#b2d5e5; --brand-d:#1f2634; --brand-l:rgba(178,213,229,.12);
+    --accent:#b2d5e5; --accent-l:rgba(178,213,229,.10); --soft:rgba(178,213,229,.06);
+    --warn:rgba(178,213,229,.65); --ok:#b2d5e5; --period:#b2d5e5;
+    --r:14px; --sh:0 1px 3px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.5);
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:78px}
-  a{color:var(--brand-d)}
+  a{color:var(--brand)}
   .main{max-width:1080px;margin:0 auto;padding:18px 16px 24px;width:100%}
   h1{font-size:21px;margin:2px 0 4px;font-weight:700}
   .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
   h2{font-size:16px;margin:18px 0 10px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  h2 .tag{font-size:11px;font-weight:600;color:var(--brand-d);background:var(--brand-l);padding:2px 8px;border-radius:20px}
+  h2 .tag{font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-l);padding:2px 8px;border-radius:20px}
   .back{background:transparent;border:0;color:var(--brand);font-size:14px;cursor:pointer;padding:6px 0;margin:-4px 0 4px -4px;display:inline-flex;align-items:center;gap:4px}
   ul.dlist{list-style:none;margin:8px 0 0;padding:0}
   ul.dlist li{padding:7px 10px;background:var(--soft);border-radius:9px;margin-bottom:6px;font-size:13px;color:var(--ink)}
@@ -47,14 +47,14 @@
   .kpi .val{font-size:21px;font-weight:700;color:var(--ink);letter-spacing:.2px}
   .kpi .val small{font-size:12px;color:var(--muted);font-weight:500;margin-left:2px}
   .kpi .delta{font-size:12px;margin-top:3px}
-  .kpi.big{background:linear-gradient(135deg,var(--brand-l),#fff);border-color:var(--brand-l)}
-  .kpi.big .val{font-size:27px;color:var(--brand-d)}
-  .kpi.big .lab{color:var(--brand-d);font-weight:600}
+  .kpi.big{background:linear-gradient(135deg,var(--brand-l),var(--panel));border-color:var(--brand-l)}
+  .kpi.big .val{font-size:27px;color:var(--brand)}
+  .kpi.big .lab{color:var(--brand);font-weight:600}
   .kpi.warnk{border-color:#EAD9C9}
   .up{color:var(--accent)} .down{color:var(--brand)} .flat{color:var(--muted)}
-  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border:0;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#020202;border:0;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
   .btn:hover{background:var(--brand-d)}
-  .btn.ghost{background:var(--soft);color:var(--brand-d)}
+  .btn.ghost{background:var(--soft);color:var(--brand)}
   .btn.ghost:hover{background:var(--brand-l)}
   .btn.sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
   .btn.warn{background:var(--accent)}
@@ -62,48 +62,48 @@
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   label.fld{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
   label.fld b{color:var(--ink);font-weight:600;font-size:13px}
-  input,select,textarea{font-family:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%}
+  input,select,textarea{font-family:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);width:100%}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
   input[type=range]{padding:0;accent-color:var(--brand)}
   .chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink)}
   .chk input{width:auto}
   .seg{display:inline-flex;background:var(--soft);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
   .seg button{border:0;background:none;padding:6px 12px;border-radius:8px;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:inherit}
-  .seg button.on{background:#fff;color:var(--brand-d);font-weight:600;box-shadow:var(--sh)}
+  .seg button.on{background:var(--brand);color:#020202;font-weight:600;box-shadow:var(--sh)}
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line)}
   th{color:var(--muted);font-weight:600;font-size:12px;background:var(--soft)}
   .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600}
-  .pill.g{background:var(--brand-l);color:var(--brand-d)}
-  .pill.a{background:var(--accent-l);color:#9a5b3f}
-  .pill.m{background:#ECE7DE;color:#6b6356}
-  .pill.r{background:#F3DEDA;color:#9a4a3c}
+  .pill.g{background:var(--brand-l);color:var(--brand)}
+  .pill.a{background:var(--accent-l);color:var(--ink)}
+  .pill.m{background:var(--soft);color:var(--muted)}
+  .pill.r{background:var(--soft);color:var(--ink)}
   .note{background:var(--soft);border-left:3px solid var(--brand);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--muted);margin:8px 0}
-  .alert{background:#FBF1E9;border-left:3px solid var(--warn);border-radius:8px;padding:11px 14px;font-size:13px;color:#7a5a2a}
+  .alert{background:var(--soft);border-left:3px solid var(--brand);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--ink)}
   .chart-wrap{width:100%;overflow:hidden}
   svg{display:block;width:100%;height:auto}
   .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
   .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:middle}
-  .meal{border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:10px;background:#fcfbf9}
-  .meal h4{margin:0 0 8px;font-size:13.5px;color:var(--brand-d);display:flex;justify-content:space-between;align-items:center}
+  .meal{border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:10px;background:var(--soft)}
+  .meal h4{margin:0 0 8px;font-size:13.5px;color:var(--brand);display:flex;justify-content:space-between;align-items:center}
   .item-row{display:grid;grid-template-columns:1.6fr .7fr .7fr .7fr .7fr .7fr .7fr 28px;gap:6px;margin-bottom:6px;align-items:center}
   .item-row.head{font-size:11px;color:var(--muted);font-weight:600}
   .item-row input{padding:6px 7px;font-size:12.5px}
-  .xbtn{background:#F3DEDA;color:#9a4a3c;border:0;border-radius:7px;cursor:pointer;font-size:14px;height:30px}
+  .xbtn{background:var(--soft);color:var(--brand);border:0;border-radius:7px;cursor:pointer;font-size:14px;height:30px}
   .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-  .cal .d{aspect-ratio:1/1;border:1px solid var(--line);border-radius:6px;padding:2px;font-size:9px;cursor:pointer;position:relative;background:#fff;overflow:hidden}
+  .cal .d{aspect-ratio:1/1;border:1px solid var(--line);border-radius:6px;padding:2px;font-size:9px;cursor:pointer;position:relative;background:var(--panel);overflow:hidden}
   .cal .d .dot{position:absolute;bottom:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--brand)}
   .cal .d.empty{border:0;background:none;cursor:default}
   .cal .d.sel{outline:2px solid var(--brand)}
   .cal .wd{text-align:center;font-size:9px;color:var(--muted);padding-bottom:1px}
   .cal + .legend{font-size:10px;gap:10px;margin-top:4px}
-  .insight{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin-bottom:8px}
+  .insight{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin-bottom:8px}
   .insight .ic{font-size:17px;flex:none}
   .insight .tx{font-size:13px;line-height:1.5}
   .muted{color:var(--muted)}
   .hr{height:1px;background:var(--line);margin:14px 0;border:0}
-  .copy-box{background:#fcfbf9;border:1px solid var(--line);border-radius:11px;padding:14px;font-size:12.5px;line-height:1.7;white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace}
-  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;z-index:99;opacity:0;transition:.25s}
+  .copy-box{background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:14px;font-size:12.5px;line-height:1.7;white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--panel);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;z-index:99;opacity:0;transition:.25s}
   .toast.show{opacity:1}
   .info{color:var(--muted);cursor:help;font-size:11px;font-weight:700;margin-left:3px;border:1px solid var(--line);border-radius:50%;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
   .flex1{flex:1}
@@ -111,7 +111,7 @@
   .pos{position:relative}
   .pbar{height:8px;background:var(--soft);border-radius:6px;overflow:hidden;margin-top:5px}
   .pbar span{display:block;height:100%;border-radius:6px}
-  .nut{padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#fff}
+  .nut{padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--soft)}
   .nut .lab{font-size:12px;color:var(--muted)}
   .nut .v{font-size:17px;font-weight:700}
   .nut .st{font-size:11px;margin-top:2px}
@@ -120,14 +120,14 @@
   .bottomnav{position:fixed;left:0;right:0;bottom:0;height:62px;background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:stretch;z-index:60;padding-bottom:env(safe-area-inset-bottom)}
   .bottomnav button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font-size:10.5px;font-family:inherit;cursor:pointer;padding:0}
   .bottomnav button .ic{font-size:19px}
-  .bottomnav button.on{color:var(--brand-d)}
+  .bottomnav button.on{color:var(--brand)}
   .bottomnav .rec{flex:0 0 72px;position:relative}
-  .bottomnav .rec .fab{position:absolute;top:-20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-d));color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 16px rgba(94,139,126,.45);border:4px solid var(--panel)}
+  .bottomnav .rec .fab{position:absolute;top:-20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-d));color:#020202;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 16px rgba(178,213,229,.4);border:4px solid var(--panel)}
   .bottomnav .rec span{margin-top:22px}
   /* 抽屉 */
-  .drawer-mask{position:fixed;inset:0;background:rgba(40,35,30,.42);z-index:70;display:none}
+  .drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:70;display:none}
   .drawer-mask.open{display:block}
-  .drawer{position:fixed;left:0;right:0;bottom:0;max-height:90vh;background:var(--bg);border-radius:18px 18px 0 0;z-index:71;transform:translateY(100%);transition:.25s;overflow:auto;padding:18px 16px 34px}
+  .drawer{position:fixed;left:0;right:0;bottom:0;max-height:90vh;background:var(--panel);border-radius:18px 18px 0 0;z-index:71;transform:translateY(100%);transition:.25s;overflow:auto;padding:18px 16px 34px}
   .drawer.open{transform:translateY(0)}
   .drawer h3{margin:0 0 12px;font-size:16px}
   .drawer .close{float:right;background:var(--soft);border:0;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:inherit;color:var(--muted)}
@@ -135,14 +135,14 @@
   .hub button{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 12px;text-align:left;cursor:pointer;font-family:inherit;box-shadow:var(--sh)}
   .hub button .t{font-size:14px;font-weight:700;color:var(--ink)}
   .hub button .d{font-size:11.5px;color:var(--muted);margin-top:3px}
-  .exp{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:#fff;margin-bottom:8px}
+  .exp{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--panel);margin-bottom:8px}
   .exp .meta{font-size:12px;color:var(--muted)}
   .food{display:grid;grid-template-columns:1.4fr .6fr .6fr .6fr .6fr .6fr .6fr 28px;gap:6px;margin-bottom:6px;align-items:center}
   .food.head{font-size:11px;color:var(--muted);font-weight:600}
   .food input{padding:6px 7px;font-size:12.5px}
   .tagpick{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
-  .tagpick button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)}
-  .tagpick button.on{background:var(--brand-l);color:var(--brand-d);border-color:var(--brand-l);font-weight:600}
+  .tagpick button{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .tagpick button.on{background:var(--brand-l);color:var(--brand);border-color:var(--brand-l);font-weight:600}
 </style>
 </head>
 <body>
@@ -451,18 +451,18 @@ function dashboardView(){
   var wMa=ma7(wArr);
   var markers=[];
   dates.forEach(function(d,i){var x=getDay(d);var mk=null;
-    if(state.periodLog[d]==='经期中')mk={color:'#C08A6E',title:'经期'};
-    else if(x.bowel===false)mk={color:'#9A8C5B',title:'未排便'};
-    else if(x.highSaltTakeout)mk={color:'#C9A24B',title:'高盐外卖'};
-    else if(x.lactuloseTaken)mk={color:'#8E7CC3',title:'乳果糖'};
-    else if(x.trained)mk={color:'#5E8B7E',title:'训练'};
-    else if(num(x.sleepHours)>0&&num(x.sleepHours)<6)mk={color:'#7AA0C4',title:'睡眠不足'};
+    if(state.periodLog[d]==='经期中')mk={color:'rgba(178,213,229,.55)',title:'经期'};
+    else if(x.bowel===false)mk={color:'rgba(178,213,229,.35)',title:'未排便'};
+    else if(x.highSaltTakeout)mk={color:'rgba(178,213,229,.7)',title:'高盐外卖'};
+    else if(x.lactuloseTaken)mk={color:'rgba(178,213,229,.5)',title:'乳果糖'};
+    else if(x.trained)mk={color:'#b2d5e5',title:'训练'};
+    else if(num(x.sleepHours)>0&&num(x.sleepHours)<6)mk={color:'rgba(178,213,229,.6)',title:'睡眠不足'};
     if(mk)markers.push({i:i,color:mk.color,title:mk.title});
   });
   var weightCard='<div class="card"><h2 style="margin:0 0 8px">体重趋势'+info('折线为每日体重，虚线为7日移动平均；顶部圆点为当日相关因素标记')+'</h2>'+
-    '<div class="chart-wrap">'+chartSVG(labels,[{name:'体重',color:'#5E8B7E',data:wArr},{name:'7日均',color:'#C08A6E',data:wMa,dash:true}],{h:190,markers:markers})+'</div>'+
-    '<div class="legend"><span><i style="background:#5E8B7E"></i>每日体重</span><span><i style="background:#C08A6E"></i>7日移动平均</span>'+
-    '<span><i style="background:#C08A6E"></i>经期</span><span><i style="background:#9A8C5B"></i>未排便</span><span><i style="background:#C9A24B"></i>高盐</span><span><i style="background:#8E7CC3"></i>乳果糖</span><span><i style="background:#5E8B7E"></i>训练</span><span><i style="background:#7AA0C4"></i>睡眠不足</span></div>'+
+    '<div class="chart-wrap">'+chartSVG(labels,[{name:'体重',color:'#b2d5e5',data:wArr},{name:'7日均',color:'rgba(178,213,229,.55)',data:wMa,dash:true}],{h:190,markers:markers})+'</div>'+
+    '<div class="legend"><span><i style="background:#b2d5e5"></i>每日体重</span><span><i style="background:rgba(178,213,229,.55)"></i>7日移动平均</span>'+
+    '<span><i style="background:rgba(178,213,229,.55)"></i>经期</span><span><i style="background:rgba(178,213,229,.35)"></i>未排便</span><span><i style="background:rgba(178,213,229,.7)"></i>高盐</span><span><i style="background:rgba(178,213,229,.5)"></i>乳果糖</span><span><i style="background:#b2d5e5"></i>训练</span><span><i style="background:rgba(178,213,229,.6)"></i>睡眠不足</span></div>'+
     weightNote(end)+'</div>';
 
   var ranges='<div class="seg" id="dashRange">'+
@@ -782,10 +782,10 @@ function dietProgress(d){
   var waterPct=(n.water==null)?0:Math.min(100,n.water/t.waterTarget*100);
   return '<div class="card"><h2 style="margin-top:0">今日饮食进度'+info('目标为区间，达到范围即显示“在目标范围内”，不要求吃满上限')+'</h2>'+
     '<div class="grid g2">'+
-    '<div class="nut"><div class="lab">热量</div><div class="v">'+v0(n.kcal)+' <small>kcal</small></div>'+kcalStatus+pbar(kcalPct,'#C9A24B')+'<div class="mini">目标 '+t.kcalMin+'-'+t.kcalMax+'</div></div>'+
-    '<div class="nut"><div class="lab">蛋白质</div><div class="v">'+v0(n.protein)+' <small>g</small></div><div class="st flat">今日 '+v0(n.protein)+' / '+t.proteinMin+'–'+t.proteinMax+'g</div>'+pbar(proPct,'#5E8B7E')+'</div>'+
-    '<div class="nut"><div class="lab">膳食纤维</div><div class="v">'+v0(n.fiber)+' <small>g</small></div><div class="st flat">目标 '+t.fiberTarget+'g</div>'+pbar(fibPct,'#7FA38F')+'</div>'+
-    '<div class="nut"><div class="lab">饮水</div><div class="v">'+v0(n.water)+' <small>ml</small></div><div class="st flat">目标 '+t.waterTarget+'ml</div>'+pbar(waterPct,'#7AA0C4')+'</div>'+
+    '<div class="nut"><div class="lab">热量</div><div class="v">'+v0(n.kcal)+' <small>kcal</small></div>'+kcalStatus+pbar(kcalPct,'rgba(178,213,229,.7)')+'<div class="mini">目标 '+t.kcalMin+'-'+t.kcalMax+'</div></div>'+
+    '<div class="nut"><div class="lab">蛋白质</div><div class="v">'+v0(n.protein)+' <small>g</small></div><div class="st flat">今日 '+v0(n.protein)+' / '+t.proteinMin+'–'+t.proteinMax+'g</div>'+pbar(proPct,'#b2d5e5')+'</div>'+
+    '<div class="nut"><div class="lab">膳食纤维</div><div class="v">'+v0(n.fiber)+' <small>g</small></div><div class="st flat">目标 '+t.fiberTarget+'g</div>'+pbar(fibPct,'rgba(178,213,229,.3)')+'</div>'+
+    '<div class="nut"><div class="lab">饮水</div><div class="v">'+v0(n.water)+' <small>ml</small></div><div class="st flat">目标 '+t.waterTarget+'ml</div>'+pbar(waterPct,'rgba(178,213,229,.6)')+'</div>'+
     '</div></div>';
 }
 function takeoutHTML(list){
@@ -902,17 +902,17 @@ function trendsView(){
   var wMa=ma7(wArr);
   var markers=[];
   dates.forEach(function(d,i){var x=getDay(d);var mk=null;
-    if(state.periodLog[d]==='经期中')mk={color:'#C08A6E',title:'经期'};
-    else if(x.bowel===false)mk={color:'#9A8C5B',title:'未排便'};
-    else if(x.highSaltTakeout)mk={color:'#C9A24B',title:'高盐外卖'};
-    else if(x.lactuloseTaken)mk={color:'#8E7CC3',title:'乳果糖'};
-    else if(x.trained)mk={color:'#5E8B7E',title:'训练'};
-    else if(num(x.sleepHours)>0&&num(x.sleepHours)<6)mk={color:'#7AA0C4',title:'睡眠不足'};
+    if(state.periodLog[d]==='经期中')mk={color:'rgba(178,213,229,.55)',title:'经期'};
+    else if(x.bowel===false)mk={color:'rgba(178,213,229,.35)',title:'未排便'};
+    else if(x.highSaltTakeout)mk={color:'rgba(178,213,229,.7)',title:'高盐外卖'};
+    else if(x.lactuloseTaken)mk={color:'rgba(178,213,229,.5)',title:'乳果糖'};
+    else if(x.trained)mk={color:'#b2d5e5',title:'训练'};
+    else if(num(x.sleepHours)>0&&num(x.sleepHours)<6)mk={color:'rgba(178,213,229,.6)',title:'睡眠不足'};
     if(mk)markers.push({i:i,color:mk.color,title:mk.title});
   });
   var weightCard='<div class="card"><h2 style="margin:0 0 8px">体重趋势'+info('折线为每日体重，虚线为7日移动平均；顶部圆点为当日相关因素标记')+'</h2>'+
-    '<div class="chart-wrap">'+chartSVG(labels,[{name:'体重',color:'#5E8B7E',data:wArr},{name:'7日均',color:'#C08A6E',data:wMa,dash:true}],{h:190,markers:markers})+'</div>'+
-    '<div class="legend"><span><i style="background:#5E8B7E"></i>每日体重</span><span><i style="background:#C08A6E"></i>7日移动平均</span><span><i style="background:#C08A6E"></i>经期</span><span><i style="background:#9A8C5B"></i>未排便</span><span><i style="background:#C9A24B"></i>高盐</span><span><i style="background:#8E7CC3"></i>乳果糖</span><span><i style="background:#5E8B7E"></i>训练</span><span><i style="background:#7AA0C4"></i>睡眠不足</span></div>'+
+    '<div class="chart-wrap">'+chartSVG(labels,[{name:'体重',color:'#b2d5e5',data:wArr},{name:'7日均',color:'rgba(178,213,229,.55)',data:wMa,dash:true}],{h:190,markers:markers})+'</div>'+
+    '<div class="legend"><span><i style="background:#b2d5e5"></i>每日体重</span><span><i style="background:rgba(178,213,229,.55)"></i>7日移动平均</span><span><i style="background:rgba(178,213,229,.55)"></i>经期</span><span><i style="background:rgba(178,213,229,.35)"></i>未排便</span><span><i style="background:rgba(178,213,229,.7)"></i>高盐</span><span><i style="background:rgba(178,213,229,.5)"></i>乳果糖</span><span><i style="background:#b2d5e5"></i>训练</span><span><i style="background:rgba(178,213,229,.6)"></i>睡眠不足</span></div>'+
     weightNote(end)+'</div>';
 
   // 肠胃趋势
@@ -920,10 +920,10 @@ function trendsView(){
   var bloatArr=dates.map(function(d){return scoreVal(getDay(d).bloat);}); /* 0 分必须进图，未记录才为 null */
   var bowelArr=dates.map(function(d){var b=getDay(d).bowel;return b===true?1:(b===false?0:null);});
   var gutChart='<div class="card"><h2 style="margin-top:0">肠胃趋势</h2>'+
-    '<div class="chart-wrap">'+chartSVG(labels,[{name:'Bristol',color:'#C08A6E',data:bristolArr},{name:'腹胀',color:'#7FA38F',data:bloatArr}],{h:170,dec:0})+'</div>'+
-    '<div class="legend"><span><i style="background:#C08A6E"></i>Bristol 分型(1-7)</span><span><i style="background:#7FA38F"></i>腹胀/10</span></div>'+
-    '<div class="chart-wrap" style="margin-top:8px">'+chartSVG(labels,[{name:'排便',color:'#5E8B7E',data:bowelArr}],{h:120,dec:0})+'</div>'+
-    '<div class="legend"><span><i style="background:#5E8B7E"></i>排便(1=有)</span></div>'+
+    '<div class="chart-wrap">'+chartSVG(labels,[{name:'Bristol',color:'rgba(178,213,229,.55)',data:bristolArr},{name:'腹胀',color:'rgba(178,213,229,.3)',data:bloatArr}],{h:170,dec:0})+'</div>'+
+    '<div class="legend"><span><i style="background:rgba(178,213,229,.55)"></i>Bristol 分型(1-7)</span><span><i style="background:rgba(178,213,229,.3)"></i>腹胀/10</span></div>'+
+    '<div class="chart-wrap" style="margin-top:8px">'+chartSVG(labels,[{name:'排便',color:'#b2d5e5',data:bowelArr}],{h:120,dec:0})+'</div>'+
+    '<div class="legend"><span><i style="background:#b2d5e5"></i>排便(1=有)</span></div>'+
     '<div class="note">Bristol 1-2 偏干硬，3-4 较理想，5-7 偏软稀。仅作自我观察，不替代医生判断。</div></div>';
 
   // 肠胃日历
@@ -947,13 +947,13 @@ function gutCalendar(){
   html+='<div class="cal"><div class="wd">日</div><div class="wd">一</div><div class="wd">二</div><div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd">六</div>';
   for(var i=0;i<first;i++)html+='<div class="d empty"></div>';
   for(var d=1;d<=days;d++){var ds=ym+'-'+String(d).padStart(2,'0');var x=getDay(ds);
-    var dot='';if(x.bowel===true)dot='<span class="dot" style="background:#5E8B7E"></span>';
-    else if(x.lactuloseTaken)dot='<span class="dot" style="background:#8E7CC3"></span>';
-    else if(num(x.bloat)>=6)dot='<span class="dot" style="background:#C08A6E"></span>';
+    var dot='';if(x.bowel===true)dot='<span class="dot" style="background:#b2d5e5"></span>';
+    else if(x.lactuloseTaken)dot='<span class="dot" style="background:rgba(178,213,229,.5)"></span>';
+    else if(num(x.bloat)>=6)dot='<span class="dot" style="background:rgba(178,213,229,.55)"></span>';
     var bl=x.bristol&&x.bristol!=='未记录'?(' '+x.bristol.match(/\d/)[0]):'';
     html+='<div class="d" data-gds="'+ds+'">'+dot+d+(bl?'<span style="font-size:9px;color:var(--muted)">'+bl+'</span>':'')+'</div>';
   }
-  html+='</div><div class="legend"><span><i style="background:#5E8B7E"></i>排便</span><span><i style="background:#8E7CC3"></i>乳果糖</span><span><i style="background:#C08A6E"></i>腹胀重</span></div>';
+  html+='</div><div class="legend"><span><i style="background:#b2d5e5"></i>排便</span><span><i style="background:rgba(178,213,229,.5)"></i>乳果糖</span><span><i style="background:rgba(178,213,229,.55)"></i>腹胀重</span></div>';
   return html;
 }
 function gutCorrelation(startDate,endDate){
@@ -1323,7 +1323,7 @@ function periodCalendar(){
   html+='<div class="cal"><div class="wd">日</div><div class="wd">一</div><div class="wd">二</div><div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd">六</div>';
   for(var i=0;i<first;i++)html+='<div class="d empty"></div>';
   for(var d=1;d<=days;d++){var ds=ym+'-'+String(d).padStart(2,'0');var t=state.periodLog[ds];var cls=t==='经期中'?'r':(t&&t!=='无出血')?'m':'';html+='<div class="d" data-pds="'+ds+'"><span class="pill '+(cls||'m')+'">'+(t||d)+'</span></div>';}
-  html+='</div><div class="legend"><span><i style="background:#F3DEDA"></i>月经期间</span><span><i style="background:#ECE7DE"></i>异常出血</span></div>';
+  html+='</div><div class="legend"><span><i style="background:rgba(178,213,229,.4)"></i>月经期间</span><span><i style="background:rgba(178,213,229,.25)"></i>异常出血</span></div>';
   return html;
 }
 function bindPeriod(){
