@@ -509,7 +509,7 @@ function dashboardView(){
   return '<h1>健康趋势控制台</h1><div class="sub">优先看本周趋势，不以单日体重波动判断进展</div>'+
     (notRec?'<button class="rec-btn" onclick="openQuick()">＋ 记录今天</button>':'')+
     todayPlanCard()+
-    '<div class="grid g3">'+top+'</div>'+
+    '<div class="grid g3" style="margin-bottom:14px">'+top+'</div>'+
     weightCard+
     '<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">趋势区间</h2>'+ranges+'</div></div>'+
     exportCard+
