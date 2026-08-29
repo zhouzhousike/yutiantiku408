@@ -11,23 +11,23 @@
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
   :root{
-    --bg:#020202; --panel:#1f2634; --ink:#b2d5e5; --muted:rgba(178,213,229,.55); --line:rgba(178,213,229,.14);
-    --brand:#b2d5e5; --brand-d:#1f2634; --brand-l:rgba(178,213,229,.12);
-    --accent:#b2d5e5; --accent-l:rgba(178,213,229,.10); --soft:rgba(178,213,229,.06);
-    --warn:rgba(178,213,229,.65); --ok:#b2d5e5; --period:#b2d5e5;
-    --r:14px; --sh:0 1px 3px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.5);
+    --bg:#FDF9EE; --panel:#ffffff; --ink:#56565B; --muted:#97979C; --line:#E6E4DA;
+    --brand:#B6C2CF; --brand-d:#7C8997; --brand-l:#DBDDDA;
+    --accent:#B6C2CF; --accent-l:#DBDDDA; --soft:#EEF0ED;
+    --warn:#b4543f; --ok:#5d7d4f; --period:#b4543f;
+    --r:14px; --sh:0 1px 3px rgba(60,50,40,.08),0 6px 18px rgba(60,50,40,.07);
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:78px}
-  a{color:var(--brand)}
+  a{color:var(--brand-d)}
   .main{max-width:1080px;margin:0 auto;padding:18px 16px 24px;width:100%}
   h1{font-size:21px;margin:2px 0 4px;font-weight:700}
   .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
   h2{font-size:16px;margin:18px 0 10px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  h2 .tag{font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-l);padding:2px 8px;border-radius:20px}
-  .back{background:transparent;border:0;color:var(--brand);font-size:14px;cursor:pointer;padding:6px 0;margin:-4px 0 4px -4px;display:inline-flex;align-items:center;gap:4px}
+  h2 .tag{font-size:11px;font-weight:600;color:var(--brand-d);background:var(--brand-l);padding:2px 8px;border-radius:20px}
+  .back{background:transparent;border:0;color:var(--brand-d);font-size:14px;cursor:pointer;padding:6px 0;margin:-4px 0 4px -4px;display:inline-flex;align-items:center;gap:4px}
   ul.dlist{list-style:none;margin:8px 0 0;padding:0}
   ul.dlist li{padding:7px 10px;background:var(--soft);border-radius:9px;margin-bottom:6px;font-size:13px;color:var(--ink)}
   ul.dlist li.reuse{background:var(--brand-l);color:var(--brand-d)}
@@ -48,66 +48,70 @@
   .kpi .val small{font-size:12px;color:var(--muted);font-weight:500;margin-left:2px}
   .kpi .delta{font-size:12px;margin-top:3px}
   .kpi.big{background:linear-gradient(135deg,var(--brand-l),var(--panel));border-color:var(--brand-l)}
-  .kpi.big .val{font-size:27px;color:var(--brand)}
-  .kpi.big .lab{color:var(--brand);font-weight:600}
+  .kpi.big .val{font-size:27px;color:var(--brand-d)}
+  .kpi.big .lab{color:var(--brand-d);font-weight:600}
   .kpi.warnk{border-color:#EAD9C9}
-  .up{color:var(--accent)} .down{color:var(--brand)} .flat{color:var(--muted)}
-  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#020202;border:0;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
-  .btn:hover{background:var(--brand-d)}
-  .btn.ghost{background:var(--soft);color:var(--brand)}
+  .up{color:var(--ok)} .down{color:var(--warn)} .flat{color:var(--muted)}
+  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--brand-d);color:#fff;border:0;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn:hover{filter:brightness(.96)}
+  .btn.ghost{background:var(--soft);color:var(--brand-d)}
   .btn.ghost:hover{background:var(--brand-l)}
   .btn.sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
-  .btn.warn{background:var(--accent)}
+  .btn.warn{background:var(--warn)}
   .btn.block{width:100%;justify-content:center;padding:13px;font-size:15px}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   label.fld{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
   label.fld b{color:var(--ink);font-weight:600;font-size:13px}
   input,select,textarea{font-family:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);width:100%}
-  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
-  input[type=range]{padding:0;accent-color:var(--brand)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand-d)}
+  input[type=range]{padding:0;accent-color:var(--brand-d)}
   .chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink)}
   .chk input{width:auto}
   .seg{display:inline-flex;background:var(--soft);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
   .seg button{border:0;background:none;padding:6px 12px;border-radius:8px;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:inherit}
-  .seg button.on{background:var(--brand);color:#020202;font-weight:600;box-shadow:var(--sh)}
+  .seg button.on{background:var(--brand-l);color:var(--brand-d);font-weight:600;box-shadow:var(--sh)}
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line)}
   th{color:var(--muted);font-weight:600;font-size:12px;background:var(--soft)}
   .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600}
-  .pill.g{background:var(--brand-l);color:var(--brand)}
+  .pill.g{background:var(--brand-l);color:var(--brand-d)}
   .pill.a{background:var(--accent-l);color:var(--ink)}
   .pill.m{background:var(--soft);color:var(--muted)}
   .pill.r{background:var(--soft);color:var(--ink)}
   .note{background:var(--soft);border-left:3px solid var(--brand);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--muted);margin:8px 0}
-  .alert{background:var(--soft);border-left:3px solid var(--brand);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--ink)}
+  .alert{background:var(--soft);border-left:3px solid var(--brand-d);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--ink)}
   .chart-wrap{width:100%;overflow:hidden}
   svg{display:block;width:100%;height:auto}
   .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
   .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:middle}
   .meal{border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:10px;background:var(--soft)}
-  .meal h4{margin:0 0 8px;font-size:13.5px;color:var(--brand);display:flex;justify-content:space-between;align-items:center}
+  .meal h4{margin:0 0 8px;font-size:13.5px;color:var(--brand-d);display:flex;justify-content:space-between;align-items:center}
   .item-row{display:grid;grid-template-columns:1.6fr .7fr .7fr .7fr .7fr .7fr .7fr 28px;gap:6px;margin-bottom:6px;align-items:center}
   .item-row.head{font-size:11px;color:var(--muted);font-weight:600}
   .item-row input{padding:6px 7px;font-size:12.5px}
-  .xbtn{background:var(--soft);color:var(--brand);border:0;border-radius:7px;cursor:pointer;font-size:14px;height:30px}
+  .xbtn{background:var(--soft);color:var(--brand-d);border:0;border-radius:7px;cursor:pointer;font-size:14px;height:30px}
   .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
   .cal .d{aspect-ratio:1/1;border:1px solid var(--line);border-radius:6px;padding:2px;font-size:9px;cursor:pointer;position:relative;background:var(--panel);overflow:hidden}
-  .cal .d .dot{position:absolute;bottom:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--brand)}
+  .cal .d .dot{position:absolute;bottom:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--brand-d)}
   .cal .d.empty{border:0;background:none;cursor:default}
-  .cal .d.sel{outline:2px solid var(--brand)}
+  .cal .d.sel{outline:2px solid var(--brand-d)}
   .cal .wd{text-align:center;font-size:9px;color:var(--muted);padding-bottom:1px}
   .cal + .legend{font-size:10px;gap:10px;margin-top:4px}
   .insight{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin-bottom:8px}
-  .insight .ic{font-size:17px;flex:none}
+  .insight .ic{font-size:17px;flex:none;color:var(--brand-d);display:flex}
+  .insight .ic svg{width:16px;height:16px}
+  h2 svg{width:18px;height:18px;flex:none}
+  .alert svg{display:inline-block;width:15px;height:15px;vertical-align:-2px;margin-right:4px}
   .insight .tx{font-size:13px;line-height:1.5}
   .muted{color:var(--muted)}
   .hr{height:1px;background:var(--line);margin:14px 0;border:0}
   .copy-box{background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:14px;font-size:12.5px;line-height:1.7;white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace}
-  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--panel);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;z-index:99;opacity:0;transition:.25s}
+  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;z-index:99;opacity:0;transition:.25s}
   .toast.show{opacity:1}
   .info{color:var(--muted);cursor:help;font-size:11px;font-weight:700;margin-left:3px;border:1px solid var(--line);border-radius:50%;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
   .flex1{flex:1}
   .mini{font-size:11px;color:var(--muted)}
+  .mini svg{width:12px;height:12px;vertical-align:-1px}
   .pos{position:relative}
   .pbar{height:8px;background:var(--soft);border-radius:6px;overflow:hidden;margin-top:5px}
   .pbar span{display:block;height:100%;border-radius:6px}
@@ -119,13 +123,14 @@
   /* 底部导航 */
   .bottomnav{position:fixed;left:0;right:0;bottom:0;height:62px;background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:stretch;z-index:60;padding-bottom:env(safe-area-inset-bottom)}
   .bottomnav button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font-size:10.5px;font-family:inherit;cursor:pointer;padding:0}
-  .bottomnav button .ic{font-size:19px}
-  .bottomnav button.on{color:var(--brand)}
+  .bottomnav button .ic{display:flex}
+  .bottomnav button .ic svg{width:20px;height:20px}
+  .bottomnav button.on{color:var(--brand-d)}
   .bottomnav .rec{flex:0 0 72px;position:relative}
-  .bottomnav .rec .fab{position:absolute;top:-20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-d));color:#020202;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 16px rgba(178,213,229,.4);border:4px solid var(--panel)}
+  .bottomnav .rec .fab{position:absolute;top:-20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-d));color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 16px rgba(124,137,151,.4);border:4px solid var(--panel)}
   .bottomnav .rec span{margin-top:22px}
   /* 抽屉 */
-  .drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:70;display:none}
+  .drawer-mask{position:fixed;inset:0;background:rgba(40,38,34,.42);z-index:70;display:none}
   .drawer-mask.open{display:block}
   .drawer{position:fixed;left:0;right:0;bottom:0;max-height:90vh;background:var(--panel);border-radius:18px 18px 0 0;z-index:71;transform:translateY(100%);transition:.25s;overflow:auto;padding:18px 16px 34px}
   .drawer.open{transform:translateY(0)}
@@ -133,7 +138,8 @@
   .drawer .close{float:right;background:var(--soft);border:0;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:inherit;color:var(--muted)}
   .hub{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
   .hub button{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 12px;text-align:left;cursor:pointer;font-family:inherit;box-shadow:var(--sh)}
-  .hub button .t{font-size:14px;font-weight:700;color:var(--ink)}
+  .hub button .t{font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .hub button .t svg{width:18px;height:18px;flex:none}
   .hub button .d{font-size:11.5px;color:var(--muted);margin-top:3px}
   .exp{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--panel);margin-bottom:8px}
   .exp .meta{font-size:12px;color:var(--muted)}
@@ -142,7 +148,7 @@
   .food input{padding:6px 7px;font-size:12.5px}
   .tagpick{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
   .tagpick button{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)}
-  .tagpick button.on{background:var(--brand-l);color:var(--brand);border-color:var(--brand-l);font-weight:600}
+  .tagpick button.on{background:var(--brand-l);color:var(--brand-d);border-color:var(--brand-l);font-weight:600}
 </style>
 </head>
 <body>
@@ -150,11 +156,11 @@
 
 <!-- 底部导航 -->
 <nav class="bottomnav" id="nav">
-  <button data-view="dashboard"><span class="ic">📊</span>首页</button>
-  <button data-view="trends"><span class="ic">📈</span>趋势</button>
+  <button data-view="dashboard"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>首页</button>
+  <button data-view="trends"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l4-5 3 3 5-7"/></svg></span>趋势</button>
   <button class="rec" id="recBtn"><span class="fab">＋</span><span>记录</span></button>
-  <button data-view="weekly"><span class="ic">📅</span>周报</button>
-  <button data-view="mine"><span class="ic">👤</span>我的</button>
+  <button data-view="weekly"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 3v4M16 3v4"/></svg></span>周报</button>
+  <button data-view="mine"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>我的</button>
 </nav>
 
 <!-- 快速记录抽屉 -->
@@ -299,6 +305,31 @@ function avgOf(dates,key){return avgNum(dates,key);}
 function isNum(v){return (typeof v==='number'||typeof v==='string')&&v!==''&&!isNaN(Number(v));}
 function exportBool(v){ if(v===true) return '是'; if(v===false) return '否'; return ''; }
 function fmt(v){ if(v==null||v==='')return '—'; if(typeof v==='number'&&!isFinite(v))return '—'; return v; }
+// 简约线性图标（单色，随文字颜色 currentColor，不彩色）
+var ICONS={
+  home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+  chart:'<path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l4-5 3 3 5-7"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 3v4M16 3v4"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  period:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/>',
+  pill:'<rect x="3" y="9" width="18" height="6" rx="3"/><path d="M12 9v6"/>',
+  food:'<path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 3c0 2 1 3 2 3M13 3c0 2-1 3-2 3"/>',
+  dumbbell:'<path d="M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12"/>',
+  plate:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/>',
+  flask:'<path d="M10 3h4M10.5 3v6l-5 9a2 2 0 0 0 2 3h9a2 2 0 0 0 2-3l-5-9V3"/>',
+  download:'<path d="M12 3v12M7 11l5 4 5-4"/><path d="M4 21h16"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
+  walk:'<circle cx="13" cy="4" r="1.6"/><path d="M12 8l-3 4 2 3-1 5M9 12l-3 2M12 15l3 1"/>',
+  leaf:'<path d="M12 21V8"/><path d="M12 12c0-4 3-6 7-6 0 4-3 6-7 6Z"/><path d="M12 16c0-3-3-4-6-4 0 3 3 4 6 4Z"/>',
+  down:'<path d="M12 5v14M6 13l6 6 6-6"/>',
+  ruler:'<path d="M4 12h16M7 9v6M12 9v6M17 9v6"/>',
+  bulb:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 0 0-4-10Z"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/>',
+  dash:'<path d="M5 12h14"/>',
+  warn:'<path d="M12 3l9 16H3Z"/><path d="M12 10v4"/><path d="M12 17h.01"/>',
+  cloud:'<path d="M7 18a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.5A3.5 3.5 0 0 1 17 18Z"/>'
+};
+function ICON(name){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[name]||'')+'</svg>';}
 // 评分类字段（0-10）存在性判断：0 是有效值，禁止用 num()||null 判断；仅 null/undefined/'' 视为未记录
 function scoreVal(v){ if(v==null||v==='')return null; var n=Number(v); return isNaN(n)?null:n; }
 function sleepHoursOf(x){x=x||{}; if(x.sleepTime&&x.wakeTime){var a=String(x.sleepTime).split(':'),b=String(x.wakeTime).split(':'); if(a.length===2&&b.length===2){var s=+a[0]*60+(+a[1]),w=+b[0]*60+(+b[1]); var mins=w-s; if(mins<=0)mins+=1440; return round(mins/60,1);}} return isNum(x.sleepHours)?Number(x.sleepHours):null;}
@@ -451,18 +482,18 @@ function dashboardView(){
   var wMa=ma7(wArr);
   var markers=[];
   dates.forEach(function(d,i){var x=getDay(d);var mk=null;
-    if(state.periodLog[d]==='经期中')mk={color:'rgba(178,213,229,.55)',title:'经期'};
-    else if(x.bowel===false)mk={color:'rgba(178,213,229,.35)',title:'未排便'};
-    else if(x.highSaltTakeout)mk={color:'rgba(178,213,229,.7)',title:'高盐外卖'};
-    else if(x.lactuloseTaken)mk={color:'rgba(178,213,229,.5)',title:'乳果糖'};
-    else if(x.trained)mk={color:'#b2d5e5',title:'训练'};
-    else if(num(x.sleepHours)>0&&num(x.sleepHours)<6)mk={color:'rgba(178,213,229,.6)',title:'睡眠不足'};
+    if(state.periodLog[d]==='经期中')mk={color:'#b4543f',title:'经期'};
+    else if(x.bowel===false)mk={color:'rgba(124,137,151,.4)',title:'未排便'};
+    else if(x.highSaltTakeout)mk={color:'rgba(124,137,151,.7)',title:'高盐外卖'};
+    else if(x.lactuloseTaken)mk={color:'rgba(124,137,151,.55)',title:'乳果糖'};
+    else if(x.trained)mk={color:'#7C8997',title:'训练'};
+    else if(num(x.sleepHours)>0&&num(x.sleepHours)<6)mk={color:'rgba(124,137,151,.6)',title:'睡眠不足'};
     if(mk)markers.push({i:i,color:mk.color,title:mk.title});
   });
   var weightCard='<div class="card"><h2 style="margin:0 0 8px">体重趋势'+info('折线为每日体重，虚线为7日移动平均；顶部圆点为当日相关因素标记')+'</h2>'+
-    '<div class="chart-wrap">'+chartSVG(labels,[{name:'体重',color:'#b2d5e5',data:wArr},{name:'7日均',color:'rgba(178,213,229,.55)',data:wMa,dash:true}],{h:190,markers:markers})+'</div>'+
-    '<div class="legend"><span><i style="background:#b2d5e5"></i>每日体重</span><span><i style="background:rgba(178,213,229,.55)"></i>7日移动平均</span>'+
-    '<span><i style="background:rgba(178,213,229,.55)"></i>经期</span><span><i style="background:rgba(178,213,229,.35)"></i>未排便</span><span><i style="background:rgba(178,213,229,.7)"></i>高盐</span><span><i style="background:rgba(178,213,229,.5)"></i>乳果糖</span><span><i style="background:#b2d5e5"></i>训练</span><span><i style="background:rgba(178,213,229,.6)"></i>睡眠不足</span></div>'+
+    '<div class="chart-wrap">'+chartSVG(labels,[{name:'体重',color:'#7C8997',data:wArr},{name:'7日均',color:'rgba(124,137,151,.55)',data:wMa,dash:true}],{h:190,markers:markers})+'</div>'+
+    '<div class="legend"><span><i style="background:#7C8997"></i>每日体重</span><span><i style="background:rgba(124,137,151,.55)"></i>7日移动平均</span>'+
+    '<span><i style="background:#b4543f"></i>经期</span><span><i style="background:rgba(124,137,151,.4)"></i>未排便</span><span><i style="background:rgba(124,137,151,.7)"></i>高盐</span><span><i style="background:rgba(124,137,151,.55)"></i>乳果糖</span><span><i style="background:#7C8997"></i>训练</span><span><i style="background:rgba(124,137,151,.6)"></i>睡眠不足</span></div>'+
     weightNote(end)+'</div>';
 
   var ranges='<div class="seg" id="dashRange">'+
@@ -546,19 +577,19 @@ function cycleInfo(){return cycleInfoAt(today());}
 function insightsCard(end){
   var ins=[];
   var w7=avgWeight(rangeDays(end,7)),w7p=avgWeight(rangeDays(addDays(end,-7),7));
-  if(w7!=null&&w7p!=null){var d=round(w7-w7p,2);ins.push(['📉','7日平均体重比上周'+(d<0?'下降 '+Math.abs(d):(d>0?'上升 '+d:'无明显变化'))+' kg，以7日均判断更稳。']);}
+  if(w7!=null&&w7p!=null){var d=round(w7-w7p,2);ins.push(['down','7日平均体重比上周'+(d<0?'下降 '+Math.abs(d):(d>0?'上升 '+d:'无明显变化'))+' kg，以7日均判断更稳。']);}
   var dates30=rangeDays(end,30);
   var waistNow=lastVal(dates30,'waist'),waistPrev=null;
   for(var i=dates30.length-8;i>=0;i--){var w=num(getDay(dates30[i]).waist);if(w>0){waistPrev=w;break;}}
-  if(waistNow&&waistPrev&&waistNow<waistPrev)ins.push(['📏','体重变化不明显，但腰围较前期下降 '+round(waistPrev-waistNow,1)+' cm，围度改善值得留意。']);
+  if(waistNow&&waistPrev&&waistNow<waistPrev)ins.push(['ruler','体重变化不明显，但腰围较前期下降 '+round(waistPrev-waistNow,1)+' cm，围度改善值得留意。']);
   var stepAvg=avgOf(rangeDays(end,7),'steps'),stepPrev=avgOf(rangeDays(addDays(end,-7),7),'steps');
-  if(stepAvg&&stepPrev&&stepPrev>0){var pct=round((stepAvg-stepPrev)/stepPrev*100,0);if(pct>=10)ins.push(['🚶','本周平均步数比上周提高 '+pct+'%。']);}
+  if(stepAvg&&stepPrev&&stepPrev>0){var pct=round((stepAvg-stepPrev)/stepPrev*100,0);if(pct>=10)ins.push(['walk','本周平均步数比上周提高 '+pct+'%。']);}
   var corr=gutCorrelation(addDays(end,-29),end); /* Item5: 固定分析 end 前 30 天，与页面区间一致 */
-  corr.forEach(function(c){if(c.flag)ins.push(['🌿',c.text]);});
+  corr.forEach(function(c){if(c.flag)ins.push(['leaf',c.text]);});
   var ci=cycleInfoAt(end); /* Item4: 用区间结束日的周期阶段，不用 today() */
-  if(ci.day!=null&&ci.day>=22&&ci.day<=28){var h=avgOf(rangeDays(end,7),'hunger'),hp=avgOf(rangeDays(addDays(end,-7),7),'hunger');if(h>0&&hp>0&&h>hp+0.5)ins.push(['🌸','本周处于可能经前阶段，平均饥饿评分较上周升高，属常见波动。']);}
-  if(!ins.length)ins.push(['💡','记录满 7 天后会在这里出现趋势提示。']);
-  return '<div class="card"><h2 style="margin-top:0">本周客观提示 <span class="tag">仅描述数据，不做诊断</span></h2>'+ins.map(function(x){return '<div class="insight"><div class="ic">'+x[0]+'</div><div class="tx">'+x[1]+'</div></div>';}).join('')+'</div>';
+  if(ci.day!=null&&ci.day>=22&&ci.day<=28){var h=avgOf(rangeDays(end,7),'hunger'),hp=avgOf(rangeDays(addDays(end,-7),7),'hunger');if(h>0&&hp>0&&h>hp+0.5)ins.push(['period','本周处于可能经前阶段，平均饥饿评分较上周升高，属常见波动。']);}
+  if(!ins.length)ins.push(['bulb','记录满 7 天后会在这里出现趋势提示。']);
+  return '<div class="card"><h2 style="margin-top:0">本周客观提示 <span class="tag">仅描述数据，不做诊断</span></h2>'+ins.map(function(x){return '<div class="insight"><div class="ic">'+ICON(x[0])+'</div><div class="tx">'+x[1]+'</div></div>';}).join('')+'</div>';
 }
 
 /* ============ 快速记录抽屉 ============ */
@@ -782,10 +813,10 @@ function dietProgress(d){
   var waterPct=(n.water==null)?0:Math.min(100,n.water/t.waterTarget*100);
   return '<div class="card"><h2 style="margin-top:0">今日饮食进度'+info('目标为区间，达到范围即显示“在目标范围内”，不要求吃满上限')+'</h2>'+
     '<div class="grid g2">'+
-    '<div class="nut"><div class="lab">热量</div><div class="v">'+v0(n.kcal)+' <small>kcal</small></div>'+kcalStatus+pbar(kcalPct,'rgba(178,213,229,.7)')+'<div class="mini">目标 '+t.kcalMin+'-'+t.kcalMax+'</div></div>'+
-    '<div class="nut"><div class="lab">蛋白质</div><div class="v">'+v0(n.protein)+' <small>g</small></div><div class="st flat">今日 '+v0(n.protein)+' / '+t.proteinMin+'–'+t.proteinMax+'g</div>'+pbar(proPct,'#b2d5e5')+'</div>'+
-    '<div class="nut"><div class="lab">膳食纤维</div><div class="v">'+v0(n.fiber)+' <small>g</small></div><div class="st flat">目标 '+t.fiberTarget+'g</div>'+pbar(fibPct,'rgba(178,213,229,.3)')+'</div>'+
-    '<div class="nut"><div class="lab">饮水</div><div class="v">'+v0(n.water)+' <small>ml</small></div><div class="st flat">目标 '+t.waterTarget+'ml</div>'+pbar(waterPct,'rgba(178,213,229,.6)')+'</div>'+
+    '<div class="nut"><div class="lab">热量</div><div class="v">'+v0(n.kcal)+' <small>kcal</small></div>'+kcalStatus+pbar(kcalPct,'rgba(124,137,151,.7)')+'<div class="mini">目标 '+t.kcalMin+'-'+t.kcalMax+'</div></div>'+
+    '<div class="nut"><div class="lab">蛋白质</div><div class="v">'+v0(n.protein)+' <small>g</small></div><div class="st flat">今日 '+v0(n.protein)+' / '+t.proteinMin+'–'+t.proteinMax+'g</div>'+pbar(proPct,'#7C8997')+'</div>'+
+    '<div class="nut"><div class="lab">膳食纤维</div><div class="v">'+v0(n.fiber)+' <small>g</small></div><div class="st flat">目标 '+t.fiberTarget+'g</div>'+pbar(fibPct,'rgba(124,137,151,.35)')+'</div>'+
+    '<div class="nut"><div class="lab">饮水</div><div class="v">'+v0(n.water)+' <small>ml</small></div><div class="st flat">目标 '+t.waterTarget+'ml</div>'+pbar(waterPct,'rgba(124,137,151,.6)')+'</div>'+
     '</div></div>';
 }
 function takeoutHTML(list){
@@ -902,17 +933,17 @@ function trendsView(){
   var wMa=ma7(wArr);
   var markers=[];
   dates.forEach(function(d,i){var x=getDay(d);var mk=null;
-    if(state.periodLog[d]==='经期中')mk={color:'rgba(178,213,229,.55)',title:'经期'};
-    else if(x.bowel===false)mk={color:'rgba(178,213,229,.35)',title:'未排便'};
-    else if(x.highSaltTakeout)mk={color:'rgba(178,213,229,.7)',title:'高盐外卖'};
-    else if(x.lactuloseTaken)mk={color:'rgba(178,213,229,.5)',title:'乳果糖'};
-    else if(x.trained)mk={color:'#b2d5e5',title:'训练'};
-    else if(num(x.sleepHours)>0&&num(x.sleepHours)<6)mk={color:'rgba(178,213,229,.6)',title:'睡眠不足'};
+    if(state.periodLog[d]==='经期中')mk={color:'#b4543f',title:'经期'};
+    else if(x.bowel===false)mk={color:'rgba(124,137,151,.4)',title:'未排便'};
+    else if(x.highSaltTakeout)mk={color:'rgba(124,137,151,.7)',title:'高盐外卖'};
+    else if(x.lactuloseTaken)mk={color:'rgba(124,137,151,.55)',title:'乳果糖'};
+    else if(x.trained)mk={color:'#7C8997',title:'训练'};
+    else if(num(x.sleepHours)>0&&num(x.sleepHours)<6)mk={color:'rgba(124,137,151,.6)',title:'睡眠不足'};
     if(mk)markers.push({i:i,color:mk.color,title:mk.title});
   });
   var weightCard='<div class="card"><h2 style="margin:0 0 8px">体重趋势'+info('折线为每日体重，虚线为7日移动平均；顶部圆点为当日相关因素标记')+'</h2>'+
-    '<div class="chart-wrap">'+chartSVG(labels,[{name:'体重',color:'#b2d5e5',data:wArr},{name:'7日均',color:'rgba(178,213,229,.55)',data:wMa,dash:true}],{h:190,markers:markers})+'</div>'+
-    '<div class="legend"><span><i style="background:#b2d5e5"></i>每日体重</span><span><i style="background:rgba(178,213,229,.55)"></i>7日移动平均</span><span><i style="background:rgba(178,213,229,.55)"></i>经期</span><span><i style="background:rgba(178,213,229,.35)"></i>未排便</span><span><i style="background:rgba(178,213,229,.7)"></i>高盐</span><span><i style="background:rgba(178,213,229,.5)"></i>乳果糖</span><span><i style="background:#b2d5e5"></i>训练</span><span><i style="background:rgba(178,213,229,.6)"></i>睡眠不足</span></div>'+
+    '<div class="chart-wrap">'+chartSVG(labels,[{name:'体重',color:'#7C8997',data:wArr},{name:'7日均',color:'rgba(124,137,151,.55)',data:wMa,dash:true}],{h:190,markers:markers})+'</div>'+
+    '<div class="legend"><span><i style="background:#7C8997"></i>每日体重</span><span><i style="background:rgba(124,137,151,.55)"></i>7日移动平均</span><span><i style="background:#b4543f"></i>经期</span><span><i style="background:rgba(124,137,151,.4)"></i>未排便</span><span><i style="background:rgba(124,137,151,.7)"></i>高盐</span><span><i style="background:rgba(124,137,151,.55)"></i>乳果糖</span><span><i style="background:#7C8997"></i>训练</span><span><i style="background:rgba(124,137,151,.6)"></i>睡眠不足</span></div>'+
     weightNote(end)+'</div>';
 
   // 肠胃趋势
@@ -920,10 +951,10 @@ function trendsView(){
   var bloatArr=dates.map(function(d){return scoreVal(getDay(d).bloat);}); /* 0 分必须进图，未记录才为 null */
   var bowelArr=dates.map(function(d){var b=getDay(d).bowel;return b===true?1:(b===false?0:null);});
   var gutChart='<div class="card"><h2 style="margin-top:0">肠胃趋势</h2>'+
-    '<div class="chart-wrap">'+chartSVG(labels,[{name:'Bristol',color:'rgba(178,213,229,.55)',data:bristolArr},{name:'腹胀',color:'rgba(178,213,229,.3)',data:bloatArr}],{h:170,dec:0})+'</div>'+
-    '<div class="legend"><span><i style="background:rgba(178,213,229,.55)"></i>Bristol 分型(1-7)</span><span><i style="background:rgba(178,213,229,.3)"></i>腹胀/10</span></div>'+
-    '<div class="chart-wrap" style="margin-top:8px">'+chartSVG(labels,[{name:'排便',color:'#b2d5e5',data:bowelArr}],{h:120,dec:0})+'</div>'+
-    '<div class="legend"><span><i style="background:#b2d5e5"></i>排便(1=有)</span></div>'+
+    '<div class="chart-wrap">'+chartSVG(labels,[{name:'Bristol',color:'rgba(124,137,151,.55)',data:bristolArr},{name:'腹胀',color:'rgba(124,137,151,.35)',data:bloatArr}],{h:170,dec:0})+'</div>'+
+    '<div class="legend"><span><i style="background:rgba(124,137,151,.55)"></i>Bristol 分型(1-7)</span><span><i style="background:rgba(124,137,151,.35)"></i>腹胀/10</span></div>'+
+    '<div class="chart-wrap" style="margin-top:8px">'+chartSVG(labels,[{name:'排便',color:'#7C8997',data:bowelArr}],{h:120,dec:0})+'</div>'+
+    '<div class="legend"><span><i style="background:#7C8997"></i>排便(1=有)</span></div>'+
     '<div class="note">Bristol 1-2 偏干硬，3-4 较理想，5-7 偏软稀。仅作自我观察，不替代医生判断。</div></div>';
 
   // 肠胃日历
@@ -932,7 +963,7 @@ function trendsView(){
   // 腹胀关联（Item5: 严格按所选日期区间，"全部"=最早记录~今天）
   var gEnd=today(),gStart=viewRange(UI.gutRange,gEnd)[0];
   var corr=gutCorrelation(gStart,gEnd);
-  var corrHtml=corr.map(function(c){return '<div class="insight"><div class="ic">'+(c.flag?'🔍':'➖')+'</div><div class="tx">'+c.text+'</div></div>';}).join('');
+  var corrHtml=corr.map(function(c){return '<div class="insight"><div class="ic">'+(c.flag?ICON('search'):ICON('dash'))+'</div><div class="tx">'+c.text+'</div></div>';}).join('');
   var corrCard='<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">腹胀关联观察'+info('仅基于你自己的数据做描述性统计，用语为“可能相关/数据不足”，不写“由XX导致”')+'</h2>'+
     '<div class="seg" id="gutRange">'+['7','30','90','999'].map(function(r){return '<button data-r="'+r+'" class="'+(UI.gutRange===r?'on':'')+'">'+(r==='999'?'全部':r+'天')+'</button>';}).join('')+'</div></div>'+corrHtml+'</div>';
 
@@ -947,13 +978,13 @@ function gutCalendar(){
   html+='<div class="cal"><div class="wd">日</div><div class="wd">一</div><div class="wd">二</div><div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd">六</div>';
   for(var i=0;i<first;i++)html+='<div class="d empty"></div>';
   for(var d=1;d<=days;d++){var ds=ym+'-'+String(d).padStart(2,'0');var x=getDay(ds);
-    var dot='';if(x.bowel===true)dot='<span class="dot" style="background:#b2d5e5"></span>';
-    else if(x.lactuloseTaken)dot='<span class="dot" style="background:rgba(178,213,229,.5)"></span>';
-    else if(num(x.bloat)>=6)dot='<span class="dot" style="background:rgba(178,213,229,.55)"></span>';
+    var dot='';if(x.bowel===true)dot='<span class="dot" style="background:#7C8997"></span>';
+    else if(x.lactuloseTaken)dot='<span class="dot" style="background:rgba(124,137,151,.55)"></span>';
+    else if(num(x.bloat)>=6)dot='<span class="dot" style="background:rgba(124,137,151,.55)"></span>';
     var bl=x.bristol&&x.bristol!=='未记录'?(' '+x.bristol.match(/\d/)[0]):'';
     html+='<div class="d" data-gds="'+ds+'">'+dot+d+(bl?'<span style="font-size:9px;color:var(--muted)">'+bl+'</span>':'')+'</div>';
   }
-  html+='</div><div class="legend"><span><i style="background:#b2d5e5"></i>排便</span><span><i style="background:rgba(178,213,229,.5)"></i>乳果糖</span><span><i style="background:rgba(178,213,229,.55)"></i>腹胀重</span></div>';
+  html+='</div><div class="legend"><span><i style="background:#7C8997"></i>排便</span><span><i style="background:rgba(124,137,151,.55)"></i>乳果糖</span><span><i style="background:rgba(124,137,151,.55)"></i>腹胀重</span></div>';
   return html;
 }
 function gutCorrelation(startDate,endDate){
@@ -1196,18 +1227,18 @@ function todayPlanCard(){
   var mealLine=bits.length?bits.join(' · '):'自炊日（4餐已排）';
   return '<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">今日计划</h2><div><button class="btn sm ghost" onclick="go(\'training\')">训练</button> <button class="btn sm ghost" onclick="go(\'mealplan\')">食谱</button></div></div>'+
     '<div class="row" style="margin-top:6px"><span class="tag">'+t+'</span><span class="mini">'+trainLine+'</span></div>'+
-    '<div class="row" style="margin-top:6px"><span class="mini">🍱 '+mealLine+'</span></div></div>';
+    '<div class="row" style="margin-top:6px"><span class="mini">'+ICON('plate')+' '+mealLine+'</span></div></div>';
 }
 /* ---- 训练计划页 ---- */
 function trainingView(){
   var end=today();var t=templateOn(end);var T=TRAIN_TEMPLATES[t];var pe=planEntry(end);var done=pe.status==='done';var isRecovery=t==='D';
   var week=rangeDays(end,7);
-  var rows=week.map(function(d){var tt=templateOn(d);var pp=planEntry(d);var T2=TRAIN_TEMPLATES[tt];var st=pp.status==='done'?'✅已完成':(tt==='D'?'恢复日':(pp.status==='skipped'?'已跳过':'计划'));return '<tr><td>'+d.slice(5)+'</td><td>'+tt+'</td><td>'+T2.name+'</td><td>'+(T2.location||'—')+'</td><td>'+st+'</td></tr>';}).join('');
+  var rows=week.map(function(d){var tt=templateOn(d);var pp=planEntry(d);var T2=TRAIN_TEMPLATES[tt];var st=pp.status==='done'?'✓ 已完成':(tt==='D'?'恢复日':(pp.status==='skipped'?'已跳过':'计划'));return '<tr><td>'+d.slice(5)+'</td><td>'+tt+'</td><td>'+T2.name+'</td><td>'+(T2.location||'—')+'</td><td>'+st+'</td></tr>';}).join('');
   var todayCard='<div class="card"><h2 style="margin:0 0 8px">今日训练计划（'+t+'）</h2>'+
     '<div class="row"><span class="tag">'+T.name+'</span><span class="mini">'+T.location+' · 约'+T.plannedMin+'分钟</span></div>'+
     '<p class="note" style="margin-top:8px">'+T.desc+'</p>'+
     (isRecovery?
-      (done?'<div class="alert" style="margin-top:8px">恢复日 ✅ 已完成（主动恢复，不是失败）</div>':'<button class="btn" id="ackRec">标记恢复日完成</button>'):
+      (done?'<div class="alert" style="margin-top:8px">恢复日 ✓ 已完成（主动恢复，不是失败）</div>':'<button class="btn" id="ackRec">标记恢复日完成</button>'):
       (done?'<div class="alert" style="margin-top:8px">今日训练已完成 ✓</div>':
         '<div class="grid g2" style="margin-top:10px"><label class="fld"><b>实际地点</b><select id="exLoc">'+['楼下健身区','家里','户外','其他'].map(function(x){return '<option '+(T.location===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></label><label class="fld"><b>实际分钟</b><input type="number" id="exMin" value="'+T.plannedMin+'"></label></div>'+
         '<label class="fld" style="margin-top:8px"><b>RPE 0-10</b><input type="number" min="0" max="10" id="exRpe"></label>'+
@@ -1263,14 +1294,14 @@ function mineView(){
   var medDays=dayKeys().filter(function(d){return state.medLog[d]&&state.medLog[d].met;}).length;
   var totalDays=dayKeys().length;
   var hub='<div class="hub">'+
-    '<button onclick="go(\'period\')"><div class="t">🌸 月经与 PCOS</div><div class="d">周期计算 · 出血类型 · 本月症状</div></button>'+
-    '<button onclick="go(\'meds\')"><div class="t">💊 药物打卡</div><div class="d">每日完成记录与设置</div></button>'+
-    '<button onclick="go(\'fooddb\')"><div class="t">🍱 常用食物库</div><div class="d">自定义食物 · 一键添加</div></button>'+
-    '<button onclick="go(\'training\')"><div class="t">🏃 我的训练计划</div><div class="d">A/B/C/D 循环 · 顺延不失败</div></button>'+
-    '<button onclick="go(\'mealplan\')"><div class="t">🥗 我的本周食谱</div><div class="d">1550-1650kcal · 自炊/外卖</div></button>'+
-    '<button onclick="go(\'experiments\')"><div class="t">🔬 实验观察</div><div class="d">前后对比，只描述不诊断</div></button>'+
-    '<button onclick="go(\'export\')"><div class="t">📤 数据导出</div><div class="d">CSV / XLSX / 备份</div></button>'+
-    '<button onclick="go(\'settings\')"><div class="t">⚙️ 设置</div><div class="d">目标 · 个人信息 · 清空</div></button>'+
+    '<button onclick="go(\'period\')"><div class="t">'+ICON('period')+' 月经与 PCOS</div><div class="d">周期计算 · 出血类型 · 本月症状</div></button>'+
+    '<button onclick="go(\'meds\')"><div class="t">'+ICON('pill')+' 药物打卡</div><div class="d">每日完成记录与设置</div></button>'+
+    '<button onclick="go(\'fooddb\')"><div class="t">'+ICON('food')+' 常用食物库</div><div class="d">自定义食物 · 一键添加</div></button>'+
+    '<button onclick="go(\'training\')"><div class="t">'+ICON('dumbbell')+' 我的训练计划</div><div class="d">A/B/C/D 循环 · 顺延不失败</div></button>'+
+    '<button onclick="go(\'mealplan\')"><div class="t">'+ICON('plate')+' 我的本周食谱</div><div class="d">1550-1650kcal · 自炊/外卖</div></button>'+
+    '<button onclick="go(\'experiments\')"><div class="t">'+ICON('flask')+' 实验观察</div><div class="d">前后对比，只描述不诊断</div></button>'+
+    '<button onclick="go(\'export\')"><div class="t">'+ICON('download')+' 数据导出</div><div class="d">CSV / XLSX / 备份</div></button>'+
+    '<button onclick="go(\'settings\')"><div class="t">'+ICON('gear')+' 设置</div><div class="d">目标 · 个人信息 · 清空</div></button>'+
     '</div>';
   var stats='<div class="card"><h2 style="margin-top:0">当前概览</h2><div class="grid g3">'+
     kpiSmall('已记录天数',totalDays,'天')+
@@ -1280,7 +1311,7 @@ function mineView(){
     kpiSmall('近3周期平均长度',ci.avg3!=null?ci.avg3:'—','天')+
     kpiSmall('二甲双胍打卡',medDays,'天')+
     kpiSmall('常用食物',(state.foodDb||[]).length,'种')+'</div>'+
-    (ci.since>90?'<div class="alert" style="margin-top:10px">⚠️ 距上次月经已超过 90 天，建议关注并咨询妇科/内分泌科医生。本工作台不做诊断。</div>':'')+
+    (ci.since>90?'<div class="alert" style="margin-top:10px">'+ICON('warn')+' 距上次月经已超过 90 天，建议关注并咨询妇科/内分泌科医生。本工作台不做诊断。</div>':'')+
     '</div>';
   return '<h1>我的</h1><div class="sub">数据汇总与各类设置入口</div>'+stats+hub;
 }
@@ -1303,7 +1334,7 @@ function periodView(){
     '<div class="grid g2" style="margin-top:10px">'+
     kpiSmall('平均周期长度',ci.avg3!=null?ci.avg3:'—','天')+
     kpiSmall('异常出血记录',ci.normals.length?'见下方日历':'—','')+'</div>';
-  var alert=ci.since>90?'<div class="alert">⚠️ 距上次月经已超过 90 天，建议关注并在需要时咨询妇科/内分泌科医生。本工作台不做诊断。</div>':'';
+  var alert=ci.since>90?'<div class="alert">'+ICON('warn')+' 距上次月经已超过 90 天，建议关注并在需要时咨询妇科/内分泌科医生。本工作台不做诊断。</div>':'';
   var ym=today().slice(0,7);var pm=state.pcosMonth[ym]||{};
   var pcosForm='<div class="card"><h2 style="margin-top:0">本月 PCOS 相关症状 <span class="tag">每月一次</span></h2>'+
     pcosField('痘痘变化',pm.acne)+pcosField('脱发变化',pm.hairLoss)+pcosField('体毛变化',pm.bodyHair)+
@@ -1323,7 +1354,7 @@ function periodCalendar(){
   html+='<div class="cal"><div class="wd">日</div><div class="wd">一</div><div class="wd">二</div><div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd">六</div>';
   for(var i=0;i<first;i++)html+='<div class="d empty"></div>';
   for(var d=1;d<=days;d++){var ds=ym+'-'+String(d).padStart(2,'0');var t=state.periodLog[ds];var cls=t==='经期中'?'r':(t&&t!=='无出血')?'m':'';html+='<div class="d" data-pds="'+ds+'"><span class="pill '+(cls||'m')+'">'+(t||d)+'</span></div>';}
-  html+='</div><div class="legend"><span><i style="background:rgba(178,213,229,.4)"></i>月经期间</span><span><i style="background:rgba(178,213,229,.25)"></i>异常出血</span></div>';
+  html+='</div><div class="legend"><span><i style="background:#b4543f"></i>月经期间</span><span><i style="background:rgba(124,137,151,.4)"></i>异常出血</span></div>';
   return html;
 }
 function bindPeriod(){
@@ -1689,7 +1720,7 @@ function cloudPull(){
 }
 function cloudSyncCard(){
   var c=cloudCfg();
-  return '<div class="card"><h2 style="margin-top:0">☁️ 云同步（多设备共享）</h2>'+
+  return '<div class="card"><h2 style="margin-top:0">'+ICON('cloud')+' 云同步（多设备共享）</h2>'+
     '<label class="fld" style="margin-bottom:10px"><b>GitHub 令牌</b><input type="password" id="cloudToken" placeholder="ghp_xxx（仅需 gist 权限）" value="'+(c.token||'')+'"></label>'+
     '<label class="fld" style="margin-bottom:10px"><b>Gist ID</b><input id="cloudGist" placeholder="留空则首次上传自动创建" value="'+(c.gistId||'')+'"></label>'+
     '<div class="row" style="margin-top:6px"><button class="btn" id="cloudPush">↑ 上传到云端</button><button class="btn ghost" id="cloudPull">↓ 从云端拉取</button></div>'+
