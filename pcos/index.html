@@ -204,7 +204,7 @@ function defaultState(){
     experiments:[],
     exercisePlan:{cycleStartDate:'',currentTemplate:'A',progressionWeek:1,templates:{}},
     plans:{exercise:{},meals:{}},
-    dietPreferences:{disliked:['西葫芦'],chickenPreference:'去皮鸡腿肉',milkPreference:'无乳糖牛奶',cookedVegetables:true,dinnerMakesNextLunch:true,ingredientReuse:'high'}
+    dietPreferences:{disliked:['西葫芦','葱'],chickenPreference:'去皮鸡腿肉',milkPreference:'无乳糖牛奶',cookedVegetables:true,dinnerMakesNextLunch:true,ingredientReuse:'high'}
   };
 }
 /* 归一化：补齐缺失字段与值清洗（不涉及版本号），load() 与 JSON 恢复共用 */
@@ -227,7 +227,7 @@ function normalizeState(d){
   if(!d.plans.exercise)d.plans.exercise={};
   if(!d.plans.meals)d.plans.meals={};
   if(!d.dietPreferences)d.dietPreferences={disliked:['西葫芦'],chickenPreference:'去皮鸡腿肉',milkPreference:'无乳糖牛奶',cookedVegetables:true,dinnerMakesNextLunch:true,ingredientReuse:'high'};
-  if(!d.dietPreferences.disliked)d.dietPreferences.disliked=[];
+  if(!d.dietPreferences.disliked)d.dietPreferences.disliked=['西葫芦','葱'];
   // 月经模型迁移：旧值 '正常月经' → '经期中'
   Object.keys(d.periodLog).forEach(function(dt){ if(d.periodLog[dt]==='正常月经') d.periodLog[dt]='经期中'; });
   return d;
@@ -1247,42 +1247,46 @@ function acknowledgeRecovery(date){var t=templateOn(date);var st=progStage();var
 function skipTraining(date){var t=templateOn(date);var sug=daySuggestion(date);state.plans.exercise[date]={templateId:t,aeroType:sug.aeroType,parts:sug.parts,status:'skipped'};save();}
 function enterNextStage(){var s=exerciseStage();if(s>=EX_STAGE_MAX)return false;state.exercisePlan.progressionWeek=s+1;save();return true;}
 
-/* 食谱模板：用户份量 肉/鱼虾熟重130-150g，米饭100-120g，蔬菜200-250g；禁止西葫芦；鸡肉=去皮鸡腿肉；牛奶=无乳糖牛奶 */
+/* 食谱模板（2026-08-31 优化版）：肉/鱼虾熟重90-120g，熟米饭70-90g，蔬菜每餐120-180g；土豆为主食时不另配米饭（土豆150-180g+肉90-120g+菜120-150g）；肉类轮换鸡腿/牛肉/猪里脊/虾/鱼；鸡蛋/酸奶/牛奶补蛋白；全天约1500-1650kcal；禁忌西葫芦、葱；鸡肉=去皮鸡腿肉；牛奶=无乳糖牛奶；晚餐多做→次日午餐 */
 function FOOD(name,gram,kcal,p,c,f,fi){return {name:name,gram:gram,kcal:kcal,protein:p,carb:c,fat:f,fiber:fi};}
 var DISHES={
-  b1:{items:[FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0),FOOD('燕麦',40,150,5,27,3,4),FOOD('蓝莓',50,29,0.4,7,0.1,1.2)]},
-  b2:{items:[FOOD('全麦面包',60,150,6,27,2,3),FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('牛油果',30,48,0.6,2.7,4.4,2),FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0)]},
-  b3:{items:[FOOD('无乳糖希腊酸奶',150,89,15,5.4,0.6,0),FOOD('草莓',50,16,0.3,3.8,0.1,1),FOOD('奇亚籽',10,49,1.6,4.3,3,3.5),FOOD('燕麦',30,113,4,20,2,3)]},
-  b4:{items:[FOOD('鸡蛋',100,156,12.6,1.2,10.6,0),FOOD('菠菜',50,12,1.3,1.7,0.2,1),FOOD('番茄',50,9,0.4,2,0.1,0.6),FOOD('橄榄油',3,27,0,0,3,0)]},
-  b5:{items:[FOOD('紫薯',100,86,1.6,20,0.1,3),FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0),FOOD('蛋白粉',20,80,16,2,1,0)]},
-  b6:{items:[FOOD('杂粮米',40,140,4,28,1,3),FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('黄瓜',100,16,0.7,3,0.1,1)]},
-  l1:{items:[FOOD('去皮鸡腿肉',140,230,28,0,12,0),FOOD('糙米饭',110,130,2.9,28,1,1.5),FOOD('西兰花',200,68,5.6,14,0.8,5.6),FOOD('橄榄油',5,45,0,0,5,0)]},
-  l2:{items:[FOOD('龙利鱼',140,120,20,0,4,0),FOOD('杂粮饭',110,130,2.9,28,1,1.5),FOOD('芦笋',200,40,4.4,7,0.2,3.6),FOOD('橄榄油',5,45,0,0,5,0)]},
-  l3:{items:[FOOD('去皮鸡腿肉',140,230,28,0,12,0),FOOD('荞麦面',80,280,9,55,1,4),FOOD('西兰花',200,68,5.6,14,0.8,5.6),FOOD('胡萝卜',50,20,0.5,5,0.1,1.5)]},
-  l4:{items:[FOOD('虾仁',140,130,25,1,2,0),FOOD('米饭',110,160,3.5,35,0.4,0.6),FOOD('荷兰豆',150,90,6,15,0.4,5),FOOD('彩椒',50,12,0.5,3,0.1,1)]},
-  l5:{items:[FOOD('瘦牛肉',140,220,30,0,11,0),FOOD('糙米饭',110,130,2.9,28,1,1.5),FOOD('西芹',150,24,1,5,0.2,2.5),FOOD('番茄',50,9,0.4,2,0.1,0.6)]},
-  l6:{items:[FOOD('去皮鸡腿肉',100,164,20,0,8.6,0),FOOD('老豆腐',80,64,6.4,1.6,3.8,0),FOOD('米饭',110,160,3.5,35,0.4,0.6),FOOD('青椒',100,20,1,5,0.2,2)]},
-  s1:{items:[FOOD('无乳糖希腊酸奶',100,59,10,3.6,0.4,0),FOOD('核桃',15,98,2.3,2,9.5,0)]},
-  s2:{items:[FOOD('苹果',150,78,0.4,21,0.3,3),FOOD('杏仁',12,69,2.5,2.5,6,1.2)]},
-  s3:{items:[FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('小番茄',100,18,0.9,4,0.2,1.4)]},
-  s4:{items:[FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0),FOOD('即食燕麦',30,113,4,20,2,3)]},
-  d1:{items:[FOOD('去皮鸡腿肉',140,230,28,0,12,0),FOOD('南瓜',150,39,1.5,10,0.2,2),FOOD('菠菜',150,35,4,5,0.5,3),FOOD('橄榄油',5,45,0,0,5,0)]},
-  d2:{items:[FOOD('鲈鱼',140,150,26,0,5,0),FOOD('紫薯',120,103,1.9,24,0.1,3.6),FOOD('西兰花',200,68,5.6,14,0.8,5.6)]},
-  d3:{items:[FOOD('去皮鸡腿肉',120,197,24,0,10.3,0),FOOD('老豆腐',100,80,8,2,4.8,0),FOOD('白菜',200,30,2.4,6,0.3,2.6),FOOD('菌菇',50,15,1.5,2.5,0.2,1.5)]},
-  d4:{items:[FOOD('虾仁',140,130,25,1,2,0),FOOD('西兰花',200,68,5.6,14,0.8,5.6),FOOD('糙米饭',90,106,2.4,23,0.8,1.2)]},
-  d5:{items:[FOOD('瘦牛肉',130,204,28,0,10.2,0),FOOD('番茄',150,27,1.2,6,0.3,1.8),FOOD('冬瓜',150,18,0.5,4,0.1,1.5),FOOD('米饭',90,131,2.9,28.6,0.3,0.5)]},
-  d6:{items:[FOOD('去皮鸡腿肉',140,230,28,0,12,0),FOOD('芦笋',150,30,3.3,5.3,0.2,2.7),FOOD('彩椒',50,12,0.5,3,0.1,1),FOOD('杂粮饭',90,106,2.4,23,0.8,1.2)]}
+  b1:{items:[FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('全麦面包',60,150,6,27,2,3),FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0),FOOD('猕猴桃',80,48,0.8,11,0.3,2.3)]},
+  b2:{items:[FOOD('燕麦',30,113,4,20,2,3),FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0),FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('香蕉',60,54,0.7,14,0.2,1.1)]},
+  b3:{items:[FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('全麦面包',60,150,6,27,2,3),FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0),FOOD('苹果',90,47,0.2,12,0.3,2),FOOD('奶酪',20,70,4.5,0.5,5.5,0)]},
+  b4:{items:[FOOD('全麦面包',80,200,8,36,2.7,4),FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('生菜',20,3,1.4,2.9,0.2,1.3),FOOD('奶酪',20,70,4.5,0.5,5.5,0),FOOD('无乳糖牛奶',150,78,5.1,7.2,2.7,0)]},
+  b5:{items:[FOOD('燕麦',30,113,4,20,2,3),FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0),FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('猕猴桃',80,48,0.8,11,0.3,2.3)]},
+  b6:{items:[FOOD('全麦面包',60,150,6,27,2,3),FOOD('鸡蛋',100,156,12.6,1.2,10.6,0),FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0),FOOD('橙子',70,35,0.7,9,0.1,1.9)]},
+  l1:{items:[FOOD('瘦牛肉',100,170,31,0,11,0),FOOD('土豆',150,135,2.6,30,0.2,2.7),FOOD('番茄',150,27,1.4,5.9,0.3,2.1),FOOD('小白菜',120,30,2.6,3.6,0.4,3),FOOD('橄榄油',5,45,0,0,5,0)]},
+  l2:{items:[FOOD('虾仁',100,95,22,1,1.5,0),FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('米饭',80,104,2.2,22.4,0.2,0.2),FOOD('小白菜',150,38,3.3,4.5,0.5,3.8)]},
+  l3:{items:[FOOD('去皮鸡腿肉',100,165,28,0,9,0),FOOD('米饭',80,104,2.2,22.4,0.2,0.2),FOOD('香菇',50,13,1.9,5.2,0.3,3.3),FOOD('胡萝卜',50,21,0.9,10,0.2,2.8),FOOD('小白菜',120,30,2.6,3.6,0.4,3)]},
+  l4:{items:[FOOD('鲈鱼',110,121,25.3,0,4.4,0),FOOD('南瓜',150,39,1.5,9.8,0.2,1.4),FOOD('米饭',60,78,1.6,16.8,0.2,0.2),FOOD('小白菜',150,38,3.3,4.5,0.5,3.8)]},
+  l5:{items:[FOOD('猪里脊',100,145,21,0,6,0),FOOD('土豆',170,153,2.9,34,0.2,3.1),FOOD('胡萝卜',60,25,1.1,12,0.2,3.4),FOOD('小白菜',150,38,3.3,4.5,0.5,3.8),FOOD('橄榄油',5,45,0,0,5,0)]},
+  l6:{items:[FOOD('瘦牛肉',85,145,26.4,0,9.4,0),FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('番茄',150,27,1.4,5.9,0.3,2.1),FOOD('米饭',80,104,2.2,22.4,0.2,0.2),FOOD('小白菜',120,30,2.6,3.6,0.4,3)]},
+  l7:{items:[FOOD('虾仁',110,105,24.2,1.1,1.7,0),FOOD('土豆',180,162,3.1,36,0.2,3.2),FOOD('小白菜',150,38,3.3,4.5,0.5,3.8),FOOD('无乳糖牛奶',30,16,1,1.4,0.5,0),FOOD('橄榄油',5,45,0,0,5,0)]},
+  s1:{items:[FOOD('无糖希腊酸奶',150,89,15,5.4,0.6,0)]},
+  s2:{items:[FOOD('无糖希腊酸奶',150,89,15,5.4,0.6,0),FOOD('猕猴桃',80,48,0.8,11,0.3,2.3)]},
+  s3:{items:[FOOD('无糖希腊酸奶',150,89,15,5.4,0.6,0),FOOD('香蕉',60,54,0.7,14,0.2,1.1)]},
+  s4:{items:[FOOD('无糖希腊酸奶',150,89,15,5.4,0.6,0),FOOD('苹果',90,47,0.2,12,0.3,2)]},
+  s5:{items:[FOOD('无糖希腊酸奶',150,89,15,5.4,0.6,0),FOOD('橙子',70,35,0.7,9,0.1,1.9)]},
+  d1:{items:[FOOD('瘦牛肉',100,170,31,0,11,0),FOOD('土豆',150,135,2.6,30,0.2,2.7),FOOD('番茄',150,27,1.4,5.9,0.3,2.1),FOOD('小白菜',120,30,2.6,3.6,0.4,3),FOOD('橄榄油',5,45,0,0,5,0)]},
+  d2:{items:[FOOD('虾仁',100,95,22,1,1.5,0),FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('米饭',80,104,2.2,22.4,0.2,0.2),FOOD('小白菜',150,38,3.3,4.5,0.5,3.8)]},
+  d3:{items:[FOOD('去皮鸡腿肉',100,165,28,0,9,0),FOOD('米饭',80,104,2.2,22.4,0.2,0.2),FOOD('香菇',50,13,1.9,5.2,0.3,3.3),FOOD('胡萝卜',50,21,0.9,10,0.2,2.8),FOOD('小白菜',120,30,2.6,3.6,0.4,3)]},
+  d4:{items:[FOOD('鲈鱼',110,121,25.3,0,4.4,0),FOOD('南瓜',150,39,1.5,9.8,0.2,1.4),FOOD('米饭',60,78,1.6,16.8,0.2,0.2),FOOD('小白菜',150,38,3.3,4.5,0.5,3.8)]},
+  d5:{items:[FOOD('猪里脊',100,145,21,0,6,0),FOOD('土豆',170,153,2.9,34,0.2,3.1),FOOD('胡萝卜',60,25,1.1,12,0.2,3.4),FOOD('小白菜',150,38,3.3,4.5,0.5,3.8),FOOD('橄榄油',5,45,0,0,5,0)]},
+  d6:{items:[FOOD('瘦牛肉',85,145,26.4,0,9.4,0),FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('番茄',150,27,1.4,5.9,0.3,2.1),FOOD('米饭',80,104,2.2,22.4,0.2,0.2),FOOD('小白菜',120,30,2.6,3.6,0.4,3)]},
+  d7:{items:[FOOD('虾仁',110,105,24.2,1.1,1.7,0),FOOD('土豆',180,162,3.1,36,0.2,3.2),FOOD('小白菜',150,38,3.3,4.5,0.5,3.8),FOOD('无乳糖牛奶',30,16,1,1.4,0.5,0),FOOD('橄榄油',5,45,0,0,5,0)]},
+  d8:{items:[FOOD('去皮鸡腿肉',105,173,29.4,0,9.5,0),FOOD('米饭',80,104,2.2,22.4,0.2,0.2),FOOD('胡萝卜',60,25,1.1,12,0.2,3.4),FOOD('小白菜',150,38,3.3,4.5,0.5,3.8),FOOD('橄榄油',5,45,0,0,5,0)]}
 };
 var DAY_RECIPES={
- 1:{breakfast:'b1',lunch:'l1',snack:'s1',dinner:'d1'},
- 2:{breakfast:'b2',lunch:'l2',snack:'s2',dinner:'d2'},
- 3:{breakfast:'b3',lunch:'l3',snack:'s3',dinner:'d3'},
- 4:{breakfast:'b4',lunch:'l4',snack:'s1',dinner:'d4'},
- 5:{breakfast:'b5',lunch:'l5',snack:'s2',dinner:'d5'},
- 6:{breakfast:'b6',lunch:'l6',snack:'s3',dinner:'d6'},
- 7:{breakfast:'b1',lunch:'l2',snack:'s4',dinner:'d2'}
+ 1:{breakfast:'b2',lunch:'l1',snack:'s3',dinner:'d1'},
+ 2:{breakfast:'b1',lunch:'l1',snack:'s1',dinner:'d2'},
+ 3:{breakfast:'b2',lunch:'l2',snack:'s3',dinner:'d3'},
+ 4:{breakfast:'b3',lunch:'l3',snack:'s4',dinner:'d4'},
+ 5:{breakfast:'b4',lunch:'l4',snack:'s2',dinner:'d5'},
+ 6:{breakfast:'b5',lunch:'l5',snack:'s1',dinner:'d6'},
+ 7:{breakfast:'b6',lunch:'l6',snack:'s5',dinner:'d7'}
 };
-var MEAL_DISH_IDS={breakfast:['b1','b2','b3','b4','b5','b6'],lunch:['l1','l2','l3','l4','l5','l6'],snack:['s1','s2','s3','s4'],dinner:['d1','d2','d3','d4','d5','d6']};
+var MEAL_DISH_IDS={breakfast:['b1','b2','b3','b4','b5','b6'],lunch:['l1','l2','l3','l4','l5','l6','l7'],snack:['s1','s2','s3','s4','s5'],dinner:['d1','d2','d3','d4','d5','d6','d7','d8']};
 function mealDayNum(date){return ((parseDate(date).getDay()+6)%7)+1;}
 function copyItems(arr){return (arr||[]).map(function(i){return {name:i.name,gram:i.gram,kcal:i.kcal,protein:i.protein,carb:i.carb,fat:i.fat,fiber:i.fiber};});}
 function defaultDayRecipes(dn){var r=DAY_RECIPES[dn];return {_ids:{breakfast:r.breakfast,lunch:r.lunch,snack:r.snack,dinner:r.dinner},breakfast:copyItems(DISHES[r.breakfast].items),lunch:copyItems(DISHES[r.lunch].items),snack:copyItems(DISHES[r.snack].items),dinner:copyItems(DISHES[r.dinner].items),lunchMode:'cook',dinnerMode:'cook',nextLunchFromDinner:false};}
