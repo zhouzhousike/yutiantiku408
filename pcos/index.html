@@ -190,7 +190,7 @@ function defaultState(){
   return {
     schemaVersion:4,
     profile:{height:158,birthYear:2003,startWeight:57,goalWeight:52,conditions:'PCOS；既往胰岛素抵抗',medsNote:'二甲双胍缓释片 0.5g，每日晚饭时一次'},
-    targets:{kcalMin:1550,kcalMax:1650,proteinMin:90,proteinMax:100,fiberTarget:28,stepsTarget:4000,waterTarget:2000,stageNote:'第1周3000步/天，第2周4000，第3-4周5000，之后逐步提高'},
+    targets:{kcalMin:1200,kcalMax:1350,proteinMin:90,proteinMax:100,fiberTarget:28,stepsTarget:4000,waterTarget:2000,stageNote:'第1周3000步/天，第2周4000，第3-4周5000，之后逐步提高'},
     days:{},
     cycles:[],
     periodLog:{},
@@ -1247,7 +1247,7 @@ function acknowledgeRecovery(date){var t=templateOn(date);var st=progStage();var
 function skipTraining(date){var t=templateOn(date);var sug=daySuggestion(date);state.plans.exercise[date]={templateId:t,aeroType:sug.aeroType,parts:sug.parts,status:'skipped'};save();}
 function enterNextStage(){var s=exerciseStage();if(s>=EX_STAGE_MAX)return false;state.exercisePlan.progressionWeek=s+1;save();return true;}
 
-/* 食谱模板（2026-08-31 优化版）：肉/鱼虾熟重90-120g，熟米饭70-90g，蔬菜每餐120-180g；土豆为主食时不另配米饭（土豆150-180g+肉90-120g+菜120-150g）；肉类轮换鸡腿/牛肉/猪里脊/虾/鱼；鸡蛋/酸奶/牛奶补蛋白；全天约1500-1650kcal；禁忌西葫芦、葱；鸡肉=去皮鸡腿肉；牛奶=无乳糖牛奶；晚餐多做→次日午餐 */
+/* 食谱模板（2026-08-31 优化版）：肉/鱼虾熟重90-120g，熟米饭70-90g，蔬菜每餐120-180g；土豆为主食时不另配米饭（土豆150-180g+肉90-120g+菜120-150g）；肉类轮换鸡腿/牛肉/猪里脊/虾/鱼；鸡蛋/酸奶/牛奶补蛋白；全天约1200-1350kcal；禁忌西葫芦、葱；鸡肉=去皮鸡腿肉；牛奶=无乳糖牛奶；晚餐多做→次日午餐 */
 function FOOD(name,gram,kcal,p,c,f,fi){return {name:name,gram:gram,kcal:kcal,protein:p,carb:c,fat:f,fiber:fi};}
 var DISHES={
   b1:{items:[FOOD('鸡蛋',50,78,6.3,0.6,5.3,0),FOOD('全麦面包',60,150,6,27,2,3),FOOD('无乳糖牛奶',200,104,6.8,9.6,3.6,0),FOOD('猕猴桃',80,48,0.8,11,0.3,2.3)]},
@@ -1446,7 +1446,7 @@ function mealplanView(){
   var list=shoppingList().map(function(x){return '<li'+(x.reuse?' class="reuse"':'')+'>'+x.name+' ×'+x.times+(x.reuse?'（复用）':'')+'</li>';}).join('');
   var shop='<div class="card"><h2 style="margin-top:0">本周采购清单</h2><ul class="dlist">'+list+'</ul><div class="note">标「复用」的食材在一周内出现多次，可一次买够。</div></div>';
   var recBar='<div class="card"><div class="row" style="justify-content:space-between"><div class="mini">点击"按计划记录"才写入今日实际饮食；计划本身不自动写实际</div><button class="btn" id="recMeal">按计划记录（写入今日实际）</button></div></div>';
-  return backBtn()+'<h1>我的本周食谱</h1><div class="sub">1550-1650 kcal/天 · 蛋白90-100g · 计划层，点击才写入实际</div>'+modeBar+bento+block('早餐','breakfast','breakfastMode')+block('午餐','lunch','lunchMode')+block('下午加餐','snack','snackMode')+block('晚餐','dinner','dinnerMode')+pref+shop+recBar;
+  return backBtn()+'<h1>我的本周食谱</h1><div class="sub">1200-1350 kcal/天 · 蛋白90-100g · 计划层，点击才写入实际</div>'+modeBar+bento+block('早餐','breakfast','breakfastMode')+block('午餐','lunch','lunchMode')+block('下午加餐','snack','snackMode')+block('晚餐','dinner','dinnerMode')+pref+shop+recBar;
 }
 function bindMealplan(){
   var end=today();
@@ -1474,7 +1474,7 @@ function mineView(){
     '<button onclick="go(\'meds\')"><div class="t">'+ICON('pill')+' 药物打卡</div><div class="d">每日完成记录与设置</div></button>'+
     '<button onclick="go(\'fooddb\')"><div class="t">'+ICON('food')+' 常用食物库</div><div class="d">自定义食物 · 一键添加</div></button>'+
     '<button onclick="go(\'training\')"><div class="t">'+ICON('dumbbell')+' 我的训练计划</div><div class="d">A/B/C/D 循环 · 顺延不失败</div></button>'+
-    '<button onclick="go(\'mealplan\')"><div class="t">'+ICON('plate')+' 我的本周食谱</div><div class="d">1550-1650kcal · 自炊/外卖</div></button>'+
+    '<button onclick="go(\'mealplan\')"><div class="t">'+ICON('plate')+' 我的本周食谱</div><div class="d">1200-1350kcal · 自炊/外卖</div></button>'+
     '<button onclick="go(\'experiments\')"><div class="t">'+ICON('flask')+' 实验观察</div><div class="d">前后对比，只描述不诊断</div></button>'+
     '<button onclick="go(\'export\')"><div class="t">'+ICON('download')+' 数据导出</div><div class="d">CSV / XLSX / 备份</div></button>'+
     '<button onclick="go(\'settings\')"><div class="t">'+ICON('gear')+' 设置</div><div class="d">目标 · 个人信息 · 清空</div></button>'+
